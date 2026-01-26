@@ -5,7 +5,7 @@
       "title": "The Power of Nuclear Energy | Physics in School"
     },
     "nav": {
-      "logo": "Nuclear Energy",
+      "logo": "Nuclear Energy of Durham PinS",
       "links": ["Overview", "Science", "Benefits", "Future"],
       "cta": "Ask AI"
     },
@@ -103,20 +103,19 @@
       "images": { "reactor": "" }
     },
     "aiChat": {
-      "title": "Nuclear Physics Expert",
+      "title": "Nuclear Energy GPT",
       "placeholder": "Ask a question...",
       "welcomeMessage": "Hello! I'm your nuclear energy assistant. Ask me anything about reactor safety, fuel cycles, or the physics of fission."
     },
     "footer": {
-      "brandName": "Physics in School",
-      "brandTagline": "Empowering the next generation of scientists with digital interactive learning.",
-      "columns": {
-        "explore": { "title": "Explore", "links": ["Nuclear Energy", "Sustainability", "Innovation", "Safety"] },
-        "resources": { "title": "Resources", "links": ["Visual Library", "Documentation", "Research Papers"] },
-        "project": { "title": "Project", "links": ["About Us", "Team", "Contact"] }
+      "brandName": "Digital Project of Physics in Society",
+      "brandTagline": "I don't know what I can fill here...",
+      "reference": {
+        "title": "Reference",
+        "body": "[1] Add IEEE or other academic references here."
       },
-      "copyright": "Copyright © 2026 Physics in School Digital Project. All rights reserved.",
-      "credits": "Designed by PinS Team"
+      "githubLinkText": "View on GitHub",
+      "credits": "Designed by "
     }
   },
   "admin": {
