@@ -1,4 +1,5 @@
 {
+  "_comment": "Edit this file to change all site text and image paths. Images: use filename (e.g. hero.jpg) or path relative to imagesBasePath; leave empty for placeholder.",
   "index": {
     "meta": {
       "title": "The Power of Nuclear Energy | Physics in School"
@@ -11,8 +12,8 @@
     "hero": {
       "badge": "Physics in School Digital Project",
       "title": "The Power of\nNuclear Energy",
-      "subtitle": "Discover the science behind clean, reliable power that could shape our sustainable future.",
-      "ctaPrimary": "Explore the Science",
+      "subtitle": "Z. Zhu, D. Huish, M. Muir, J. Bradlay, L. Desmulliez",
+      "ctaPrimary": "Explore the Nuclear Energy",
       "ctaSecondary": "Watch the Film",
       "videoLabel": "Video Background Placeholder",
       "scrollHint": "Scroll to explore",

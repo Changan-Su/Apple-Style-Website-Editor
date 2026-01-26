@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Hero primary CTA: smooth scroll to next section (Highlights)
+    const heroCtaPrimary = document.querySelector('section#overview button[data-material="hero.ctaPrimary"]');
+    if (heroCtaPrimary) {
+        heroCtaPrimary.addEventListener('click', () => {
+            const next = document.getElementById('highlights');
+            if (next) next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
     const tabs = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');
 

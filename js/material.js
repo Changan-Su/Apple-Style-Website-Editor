@@ -21,15 +21,16 @@
 
   function setText(el, value) {
     if (value == null) return;
+    var s = typeof value === 'string' ? value : (Array.isArray(value) ? value.join(', ') : String(value));
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      el.placeholder = value;
+      el.placeholder = s;
       return;
     }
-    el.textContent = value.replace(/\\n/g, '\n');
+    el.textContent = s.replace(/\\n/g, '\n');
   }
 
   function setImage(el, url) {
-    if (!url) return;
+    if (url == null || url === '') return;
     const base = material?.imagesBasePath || 'assets/images/';
     const src = url.startsWith('http') || url.startsWith('/') ? url : (base + url);
     if (el.tagName === 'IMG') {
@@ -55,7 +56,7 @@
     if (!path) return;
     const fullPath = page + '.' + path;
     const value = getByPath(material, fullPath);
-    if (value != null) setImage(el, value);
+    if (value != null && value !== '') setImage(el, value);
   }
 
   function applyList(page, container) {
