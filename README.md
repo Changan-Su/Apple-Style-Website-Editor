@@ -28,9 +28,6 @@ This repository is the **frontend** for the **Physics in Society (PinS)** digita
   - AI Chat: glassmorphism container with simulated chat (user/AI bubbles, "typing" state)
   - Footer with multi-column links
 
-- **Admin dashboard (`admin.html`)**
-  - Sidebar navigation, stat cards (views, sessions, queries)
-  - Content list with status labels (Published / Draft)
 
 ### Project Structure
 
@@ -97,9 +94,6 @@ This repository is the **frontend** for the **Physics in Society (PinS)** digita
   - AI 对话：毛玻璃容器内的模拟聊天（用户/AI 气泡、输入中提示）
   - 页脚多列导航
 
-- **管理后台 (`admin.html`)**
-  - 侧边栏导航、统计卡片（浏览、会话、查询）
-  - 内容管理列表与状态标签（已发布/草稿）
 
 ### 项目结构
 
