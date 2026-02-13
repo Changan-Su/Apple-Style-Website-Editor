@@ -305,14 +305,14 @@ window.EditorSystem = (function() {
     if (section) {
       section.name = newName;
       window.ModeManager.updateMaterialInMemory(material);
-      
-      // Update navigation links
-      if (window.SectionRenderer && window.SectionRenderer.render) {
-        // Just update nav links without full re-render
-        setTimeout(() => {
-          const navEvent = new CustomEvent('nav-update');
-          document.dispatchEvent(navEvent);
-        }, 100);
+
+      // Keep quick-jump labels in sync immediately.
+      document.querySelectorAll(`.nav-link[data-section-id="${sectionId}"]`).forEach((link) => {
+        link.textContent = newName;
+      });
+      const sidebarName = document.querySelector(`[data-sidebar-name-id="${sectionId}"]`);
+      if (sidebarName) {
+        sidebarName.textContent = newName;
       }
     }
   }

@@ -7,14 +7,14 @@
         "template": "hero",
         "enabled": true,
         "order": 0,
-        "name": "Overview"
+        "name": "Homepage"
       },
       {
         "id": "highlights",
         "template": "tabbed-content",
         "enabled": true,
         "order": 1,
-        "name": "Science"
+        "name": "Fission Introduction"
       },
       {
         "id": "features",
@@ -87,8 +87,8 @@
       }
     },
     "highlights": {
-      "label": "",
-      "headline": "Fission Section Introduction",
+      "label": "Highlights",
+      "headline": "Fission Introduction",
       "tabs": [
         "Physics of Fission",
         "Chain Reaction",
