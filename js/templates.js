@@ -46,7 +46,7 @@ window.TemplateRegistry = (function() {
     `;
   }
 
-  function renderDetailMedia(url, materialPath, variant = 'banner') {
+  function renderDetailMedia(url, materialPath, variant = 'banner', useNaturalSize = false, shrinkRatio = null) {
     if (!url) return '';
     const targetClass = variant === 'banner' ? 'detail-banner-media' : 'detail-end-media';
     const materialAttr = materialPath ? `data-material-img="${materialPath}"` : '';
@@ -65,6 +65,15 @@ window.TemplateRegistry = (function() {
             preload="metadata"
             data-material-video="true"
           ></video>
+        </div>
+      `;
+    }
+
+    // Natural size mode: render <img> at original dimensions with max constraints
+    if (useNaturalSize && shrinkRatio != null) {
+      return `
+        <div class="${targetClass} detail-banner-media--natural" ${materialAttr} ${detailMediaAttr}>
+          <img src="${url}" class="detail-banner-img-natural" alt="" />
         </div>
       `;
     }
@@ -342,7 +351,9 @@ window.TemplateRegistry = (function() {
       bannerImageUrl = '',
       bannerImagePath = '',
       detailEndImageUrl = '',
-      detailEndImagePath = ''
+      detailEndImagePath = '',
+      bannerShrinkRatio = null,
+      detailShrinkPath = ''
     } = options;
 
     const closeTarget = closeTargetValue ? `${closeTargetAttr}="${closeTargetValue}"` : '';
@@ -369,10 +380,19 @@ window.TemplateRegistry = (function() {
     const bannerControlAttrs = detailBannerPath
       ? `data-detail-banner-configurable="true" data-detail-banner-path="${detailBannerPath}" data-detail-banner-enabled="${bannerEnabled ? 'true' : 'false'}"`
       : '';
+    const shrinkRatio = bannerShrinkRatio != null && Number.isFinite(Number(bannerShrinkRatio))
+      ? Math.max(20, Math.min(100, Math.round(Number(bannerShrinkRatio))))
+      : null;
+    const wrapShrinkClass = shrinkRatio != null ? ' detail-content-wrap--banner-shrunk' : '';
+    const wrapShrinkStyle = shrinkRatio != null ? ` style="--detail-banner-shrink-ratio: ${shrinkRatio}"` : '';
+    const shrinkPathAttr = detailShrinkPath ? ` data-detail-shrink-path="${detailShrinkPath}"` : '';
+    
+    // Use natural size rendering when shrinkRatio is provided (for TIL templates)
+    const useNaturalSize = shrinkRatio != null;
 
     return `
-      <div class="detail-content-wrap w-full h-full flex flex-col" ${bannerControlAttrs}>
-        ${bannerEnabled ? renderDetailMedia(bannerImageUrl, bannerImagePath, 'banner') : ''}
+      <div class="detail-content-wrap w-full h-full flex flex-col${wrapShrinkClass}" ${bannerControlAttrs}${wrapShrinkStyle}${shrinkPathAttr}>
+        ${bannerEnabled ? renderDetailMedia(bannerImageUrl, bannerImagePath, 'banner', useNaturalSize, shrinkRatio) : ''}
         <div class="${backPanelClass} detail-content-panel">
           <div class="flex items-center justify-between gap-4">
             <h4 class="text-[36px] font-semibold text-white leading-tight" data-material="${titlePath}">${title || ''}</h4>
@@ -384,7 +404,7 @@ window.TemplateRegistry = (function() {
           <div class="detail-rich-text ${detailRichTextClass} text-lg text-text-muted/90 font-normal leading-relaxed latex-content flex-1 min-h-0 overflow-y-auto pr-2" style="max-height:100%;" ${detailMaterialAttr}>
             ${detailContent}
           </div>
-          ${renderDetailMedia(detailEndImageUrl, detailEndImagePath, 'end')}
+          ${renderDetailMedia(detailEndImageUrl, detailEndImagePath, 'end', false, null)}
         </div>
       </div>
     `;
@@ -416,11 +436,31 @@ window.TemplateRegistry = (function() {
       wrapperClass = '',
       frontShellClass = 'h-full',
       backShellClass = 'h-full',
-      backPanelClass = 'w-full h-full p-[60px] flex flex-col justify-center gap-6 overflow-y-auto'
+      backPanelClass = 'w-full h-full p-[60px] flex flex-col justify-center gap-6 overflow-y-auto',
+      backHtmlOverride = null
     } = options;
 
     const dir = normalizeFlipDirection(flipDirection);
     const enabled = Boolean(flipEnabled);
+
+    const backContent = backHtmlOverride != null ? backHtmlOverride : renderDetailContent({
+      title,
+      titlePath,
+      detail,
+      detailPath,
+      detailBlocks,
+      detailBlocksPath,
+      showBanner,
+      detailBannerPath,
+      backPanelClass,
+      closeButtonClass: 'flip-back-trigger',
+      closeTargetAttr: 'data-flip-target',
+      closeTargetValue: flipKey,
+      bannerImageUrl,
+      bannerImagePath,
+      detailEndImageUrl,
+      detailEndImagePath
+    });
 
     return `
       <div
@@ -441,24 +481,7 @@ window.TemplateRegistry = (function() {
           </div>
           <div class="flip-card-back">
             <div class="flip-card-face-shell ${backShellClass}">
-              ${renderDetailContent({
-                title,
-                titlePath,
-                detail,
-                detailPath,
-                detailBlocks,
-                detailBlocksPath,
-                showBanner,
-                detailBannerPath,
-                backPanelClass,
-                closeButtonClass: 'flip-back-trigger',
-                closeTargetAttr: 'data-flip-target',
-                closeTargetValue: flipKey,
-                bannerImageUrl,
-                bannerImagePath,
-                detailEndImageUrl,
-                detailEndImagePath
-              })}
+              ${backContent}
             </div>
           </div>
         </div>
@@ -514,6 +537,47 @@ window.TemplateRegistry = (function() {
 
     if (legacyItems.length) return legacyItems;
     return [];
+  }
+
+  function buildTextImageLeftItemsCompat(data) {
+    if (Array.isArray(data?.items) && data.items.length) {
+      return data.items.map((item, idx) => ({
+        tab: item?.tab || item?.title || `Section ${idx + 1}`,
+        title: item?.title || '',
+        description: item?.description || '',
+        cta: item?.cta || 'Learn more',
+        detail: item?.detail || '',
+        detailBlocks: item?.detailBlocks,
+        showDetailBanner: item?.showDetailBanner !== false,
+        detailEndImage: item?.detailEndImage || '',
+        flipEnabled: item?.flipEnabled !== false,
+        flipDirection: item?.flipDirection || 'y',
+        imageLabel: item?.imageLabel || '',
+        detailImageShrinkRatio: typeof item?.detailImageShrinkRatio === 'number' ? item.detailImageShrinkRatio : 60,
+        images: item?.images || {},
+        imagesPosition: item?.images?.position || {}
+      }));
+    }
+    const legacy = data;
+    if (!legacy || (typeof legacy.title === 'undefined' && typeof legacy.description === 'undefined')) {
+      return [];
+    }
+    return [{
+      tab: legacy.title || 'Section 1',
+      title: legacy.title || '',
+      description: legacy.description || '',
+      cta: legacy.cta || 'Learn more',
+      detail: legacy.detail || '',
+      detailBlocks: legacy.detailBlocks,
+      showDetailBanner: legacy.showDetailBanner !== false,
+      detailEndImage: legacy.detailEndImage || '',
+      flipEnabled: legacy.flipEnabled === true,
+      flipDirection: legacy.flipDirection || 'y',
+      imageLabel: legacy.imageLabel || '',
+      detailImageShrinkRatio: typeof legacy.detailImageShrinkRatio === 'number' ? legacy.detailImageShrinkRatio : 60,
+      images: legacy.images || {},
+      imagesPosition: legacy.images?.position || {}
+    }];
   }
 
   // Hero Template
@@ -766,69 +830,133 @@ window.TemplateRegistry = (function() {
     `;
   }
 
-  // Text + Image Left Template
+  // Text + Image Left Template (NO FLIP - same-face layout transition)
   function textImageLeftTemplate(sectionId, data, material) {
-    const imgUrl = getImageUrl(data.images?.main, material);
-    const detailEndImageUrl = getImageUrl(data.detailEndImage, material);
-    const imgPos = data.images?.position || {};
-    const bgPosX = imgPos.x ?? 50;
-    const bgPosY = imgPos.y ?? 50;
-    const bgScale = imgPos.scale ?? 100;
-    const bgStyle = imgUrl && !isVideoUrl(imgUrl) ? `background-image: url(${imgUrl}); background-size: ${bgScale}%; background-position: ${bgPosX}% ${bgPosY}%;` : '';
-    const videoLayer = renderVideoLayer(imgUrl);
+    const items = buildTextImageLeftItemsCompat(data);
     const theme = sectionId === 'safety' || sectionId === 'innovation' ? 'dark' : 'light';
-    
-    const flipPath = `${sectionId}`;
-    const flipKey = `${sectionId}-section-card`;
-    const flipEnabled = data.flipEnabled === true;
-    const showDetailBanner = data.showDetailBanner !== false;
-    const frontHtml = `
-      <div class="w-full h-full flex items-center gap-[80px]">
-        <div class="w-[500px] flex flex-col gap-6 fade-in-up">
-          <h2 class="text-[64px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05]" data-material="${sectionId}.title">${data.title || ''}</h2>
-          <p class="text-[24px] font-normal text-text-muted leading-[1.4]" data-material="${sectionId}.description">
-            ${data.description || ''}
-          </p>
-          ${flipEnabled ? `
-            <button class="flip-trigger w-fit px-6 py-3 rounded-full ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-black/80'} font-medium transition-colors mt-2 flex items-center gap-2" data-flip-target="${flipKey}" data-material="${sectionId}.cta">
-              ${data.cta || 'Learn more'}
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          ` : ''}
-        </div>
-        <div class="flex-1 h-[600px] ${theme === 'dark' ? 'bg-surface-dark' : 'bg-white shadow-xl shadow-black/5'} rounded-[32px] relative overflow-hidden fade-in-up bg-cover bg-center" style="transition-delay: 0.2s; ${bgStyle}" data-material-img="${sectionId}.images.main">
-          ${videoLayer}
-          <div class="absolute inset-0 flex items-center justify-center ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} text-3xl font-semibold" data-material="${sectionId}.imageLabel">${data.imageLabel || ''}</div>
-        </div>
-      </div>
-    `;
+
+    if (!items.length) {
+      return `
+        <section id="${sectionId}" class="w-full ${theme === 'dark' ? 'bg-black' : 'bg-surface-light text-text-primaryLight'} py-[120px]">
+          <div class="max-w-[1440px] mx-auto px-[120px] h-[600px] flex items-center justify-center text-text-muted">No content</div>
+        </section>
+      `;
+    }
+
+    const first = items[0];
+    const imgUrl0 = getImageUrl(first.images?.main, material);
+    const imgPos0 = first.imagesPosition || first.images?.position || {};
+    const bgPosX0 = imgPos0.x ?? 50;
+    const bgPosY0 = imgPos0.y ?? 50;
+    const bgScale0 = imgPos0.scale ?? 100;
+    const bgStyle0 = imgUrl0 && !isVideoUrl(imgUrl0) ? `background-image: url(${imgUrl0}); background-size: ${bgScale0}%; background-position: ${bgPosX0}% ${bgPosY0}%;` : '';
+    const videoLayer0 = renderVideoLayer(imgUrl0);
+
+    // Determine material path prefix (items vs direct)
+    const hasItemsArray = Array.isArray(data?.items) && data.items.length > 0;
+    const materialPrefix = hasItemsArray ? `${sectionId}.items.0` : sectionId;
+
+    // Prepare items data for switcher
+    const itemsForSwitcher = items.map(function(item, i) {
+      const imgUrl = getImageUrl(item.images?.main, material);
+      const pos = item.imagesPosition || item.images?.position || {};
+      const bgStyle = imgUrl && !isVideoUrl(imgUrl) ? `background-image: url(${imgUrl}); background-size: ${pos.scale ?? 100}%; background-position: ${pos.x ?? 50}% ${pos.y ?? 50}%;` : '';
+      return {
+        title: item.title || '',
+        description: item.description || '',
+        imageLabel: item.imageLabel || '',
+        detail: item.detail || '',
+        detailBlocks: item.detailBlocks || [],
+        imgUrl: imgUrl,
+        bgStyle: bgStyle,
+        isVideo: isVideoUrl(imgUrl),
+        detailImageShrinkRatio: typeof item.detailImageShrinkRatio === 'number' ? item.detailImageShrinkRatio : 60
+      };
+    });
+    const itemsForSwitcherJson = JSON.stringify(itemsForSwitcher).replace(/"/g, '&quot;');
+
+    // Section switcher buttons (only show if multiple items)
+    const switcherButtons = items.length > 1 ? items.map(function(item, i) {
+      const active = i === 0;
+      const btnClass = theme === 'dark'
+        ? (active ? 'til-switcher-btn til-switcher-btn--active bg-white text-black border-white' : 'til-switcher-btn bg-transparent text-white border-white/30 hover:border-white/60')
+        : (active ? 'til-switcher-btn til-switcher-btn--active bg-black text-white border-black' : 'til-switcher-btn bg-transparent text-text-primaryLight border-black/20 hover:border-black/40');
+      return `<div class="relative" data-collection-item="true" data-collection-type="text-image-left" data-collection-path="${sectionId}.items" data-item-index="${i}"><button type="button" class="${btnClass} px-5 py-2.5 rounded-full text-sm font-medium transition-all border" data-til-index="${i}" data-til-section-id="${sectionId}">${item.tab || item.title || 'Section ' + (i + 1)}</button></div>`;
+    }).join('') : '';
 
     return `
-      <section id="${sectionId}" class="w-full ${theme === 'dark' ? 'bg-black' : 'bg-surface-light text-text-primaryLight'} py-[120px]">
+      <section id="${sectionId}" class="w-full ${theme === 'dark' ? 'bg-black' : 'bg-surface-light text-text-primaryLight'} py-[120px]" data-section-id="${sectionId}" data-template="text-image-left">
         <div class="max-w-[1440px] mx-auto px-[120px] h-[600px]">
-          ${renderFlipWrapper({
-            flipKey,
-            flipPath,
-            flipEnabled,
-            flipDirection: data.flipDirection,
-            showBanner: showDetailBanner,
-            wrapperClass: 'h-full rounded-[32px]',
-            frontHtml,
-            title: data.title || '',
-            titlePath: `${sectionId}.title`,
-            detail: data.detail || '',
-            detailPath: `${sectionId}.detail`,
-            detailBlocks: data.detailBlocks,
-            detailBlocksPath: `${sectionId}.detailBlocks`,
-            bannerImageUrl: imgUrl,
-            bannerImagePath: `${sectionId}.images.main`,
-            detailBannerPath: `${sectionId}.showDetailBanner`,
-            detailEndImageUrl,
-            detailEndImagePath: `${sectionId}.detailEndImage`,
-            frontShellClass: 'h-full rounded-[32px] overflow-hidden',
-            backShellClass: `h-full rounded-[32px] overflow-hidden ${theme === 'dark' ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-white'}`,
-            backPanelClass: 'w-full h-full p-[60px] flex flex-col justify-center gap-6 overflow-y-auto'
-          })}
+          <div class="til-container w-full h-full relative"
+               data-til-section-id="${sectionId}"
+               data-til-active-index="0"
+               data-til-detail-state="collapsed"
+               data-til-theme="${theme}"
+               data-til-has-items="${hasItemsArray ? 'true' : 'false'}"
+               data-til-items="${itemsForSwitcherJson}">
+            
+            <!-- Left Content Area -->
+            <div class="til-left-area absolute left-0 top-0 w-[500px] h-full flex flex-col transition-all duration-500"
+                 data-til-left-area>
+              
+              <!-- Section Switcher (always at top) -->
+              <div class="til-switcher-container mb-8 transition-opacity duration-300" data-til-switcher-container>
+                <div class="til-switcher flex flex-wrap gap-2 items-center" data-til-switcher data-collection-container="true" data-collection-type="text-image-left" data-collection-path="${sectionId}.items">
+                  ${switcherButtons}
+                </div>
+              </div>
+              
+              <!-- Title/Description (shown when collapsed) -->
+              <div class="til-collapsed-content transition-opacity duration-300 flex-1 flex flex-col justify-center"
+                   data-til-collapsed-content>
+                <h2 class="til-title text-[64px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05] mb-6" 
+                    data-material="${materialPrefix}.title"
+                    data-til-title>${first.title || ''}</h2>
+                <p class="til-description text-[24px] font-normal text-text-muted leading-[1.4] mb-8" 
+                   data-material="${materialPrefix}.description"
+                   data-til-description>${first.description || ''}</p>
+                <button class="til-learn-more-btn w-fit px-6 py-3 rounded-full ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-black/80'} font-medium transition-colors flex items-center gap-2"
+                        data-til-learn-more
+                        data-material="${materialPrefix}.cta">
+                  ${first.cta || 'Learn more'}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              
+              <!-- Detail Content (shown when expanded) -->
+              <div class="til-detail-content opacity-0 pointer-events-none transition-opacity duration-300 flex-1 flex flex-col overflow-hidden"
+                   data-til-detail-content>
+                <div class="flex flex-col gap-6 h-full">
+                  <div class="flex items-start justify-between">
+                    <h3 class="text-[40px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-tight"
+                        data-til-detail-title>${first.title || ''}</h3>
+                    <button class="til-close-btn w-10 h-10 rounded-full ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-black/10 hover:bg-black/20'} transition-colors flex items-center justify-center flex-shrink-0 ml-4"
+                            data-til-close>
+                      <svg class="w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-black'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="w-16 h-[2px] ${theme === 'dark' ? 'bg-accent-blue' : 'bg-black'} flex-shrink-0"></div>
+                  <div class="til-detail-text text-[17px] ${theme === 'dark' ? 'text-white/80' : 'text-text-primaryLight/80'} font-normal leading-relaxed latex-content overflow-y-auto pr-2 flex-1"
+                       data-til-detail-text
+                       data-material="${materialPrefix}.detail">${first.detail || 'Detail content goes here.'}</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right Image Area -->
+            <div class="til-right-area absolute right-0 top-0 h-full transition-all duration-500"
+                 style="width: calc(100% - 500px - 80px);"
+                 data-til-right-area>
+              <div class="til-image-wrapper w-full h-full ${theme === 'dark' ? 'bg-surface-dark' : 'bg-white shadow-xl shadow-black/5'} rounded-[32px] relative overflow-hidden bg-cover bg-center transition-all duration-500" 
+                   style="${bgStyle0}"
+                   data-material-img="${materialPrefix}.images.main"
+                   data-til-image-wrapper>
+                ${videoLayer0}
+                <div class="absolute inset-0 flex items-center justify-center ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} text-3xl font-semibold til-image-label" 
+                     data-material="${materialPrefix}.imageLabel">${first.imageLabel || ''}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     `;
@@ -1267,6 +1395,7 @@ window.TemplateRegistry = (function() {
     getAll: function() {
       return Object.keys(templates);
     },
+    buildTextImageLeftItemsCompat: buildTextImageLeftItemsCompat,
     render: function(templateName, sectionId, data, material) {
       const template = templates[templateName];
       if (!template) {

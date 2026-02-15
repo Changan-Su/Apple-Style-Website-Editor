@@ -230,12 +230,20 @@
       ]
     },
     "safety": {
-      "title": "Uncompromising Safety.",
-      "description": "Advanced passive safety systems use natural laws of physics to shut down automatically without human intervention.",
-      "imageLabel": "Safety Visualization",
-      "images": {
-        "main": ""
-      }
+      "items": [
+        {
+          "tab": "Safety Overview",
+          "title": "Uncompromising Safety.",
+          "description": "Advanced passive safety systems use natural laws of physics to shut down automatically without human intervention.",
+          "cta": "Learn more",
+          "detail": "Modern nuclear reactors incorporate multiple layers of safety systems designed to prevent accidents and contain any potential releases. Passive safety features use gravity, natural convection, and other physical phenomena rather than active mechanical systems or human intervention.",
+          "imageLabel": "Safety Visualization",
+          "detailImageShrinkRatio": 60,
+          "images": {
+            "main": ""
+          }
+        }
+      ]
     },
     "sustainability": {
       "title": "Green. Clean. Future.",
@@ -246,12 +254,20 @@
       }
     },
     "innovation": {
-      "title": "Limitless Potential.",
-      "description": "Small Modular Reactors (SMRs) bring flexible, scalable power to remote communities and industrial hubs.",
-      "imageLabel": "SMR Visualization",
-      "images": {
-        "main": ""
-      }
+      "items": [
+        {
+          "tab": "Innovation Overview",
+          "title": "Limitless Potential.",
+          "description": "Small Modular Reactors (SMRs) bring flexible, scalable power to remote communities and industrial hubs.",
+          "cta": "Learn more",
+          "detail": "Small Modular Reactors represent the next generation of nuclear technology. These compact, factory-built reactors offer enhanced safety, reduced construction time, and flexible deployment options for diverse energy needs.",
+          "imageLabel": "SMR Visualization",
+          "detailImageShrinkRatio": 60,
+          "images": {
+            "main": ""
+          }
+        }
+      ]
     },
     "closerLook": {
       "headline": "Take a closer look.",

@@ -7,61 +7,55 @@
         "template": "hero",
         "enabled": true,
         "order": 0,
-        "name": "Homepage"
+        "name": "Overview"
       },
       {
         "id": "highlights",
         "template": "tabbed-content",
         "enabled": true,
         "order": 1,
-        "name": "Fission Introduction"
-      },
-      {
-        "id": "MSR",
-        "template": "interactive-details",
-        "enabled": true,
-        "order": 2
+        "name": "Science"
       },
       {
         "id": "features",
         "template": "card-grid",
         "enabled": true,
-        "order": 3,
+        "order": 2,
         "name": "Benefits"
       },
       {
         "id": "safety",
         "template": "text-image-left",
         "enabled": true,
-        "order": 4,
+        "order": 3,
         "name": "Safety"
       },
       {
         "id": "sustainability",
         "template": "text-image-right",
         "enabled": true,
-        "order": 5,
+        "order": 4,
         "name": "Sustainability"
       },
       {
         "id": "innovation",
         "template": "text-image-left",
         "enabled": true,
-        "order": 6,
+        "order": 5,
         "name": "Innovation"
       },
       {
         "id": "closerLook",
         "template": "accordion",
         "enabled": true,
-        "order": 7,
+        "order": 6,
         "name": "Closer Look"
       },
       {
         "id": "aiChat",
         "template": "ai-chat",
         "enabled": true,
-        "order": 8,
+        "order": 7,
         "name": "Ask AI"
       }
     ]
@@ -93,8 +87,8 @@
       }
     },
     "highlights": {
-      "label": "Highlights",
-      "headline": "Fission Introduction",
+      "label": "",
+      "headline": "Fission Section Introduction",
       "tabs": [
         "Physics of Fission",
         "Chain Reaction",
@@ -143,53 +137,45 @@
           "title": "The Physics of Nuclear Fission",
           "description": "Nuclear fission releases energy when a heavy atomic nucleus absorbs a neutron and splits into smaller, more stable fragments.",
           "cta": "Learn more",
-          "detail": "Nuclear fission is the neutron-induced splitting of a heavy atomic nucleus into smaller nuclei. In reactor technology, uranium-235 is the isotope most commonly used.<sup class=\"ref-cite\" data-ref-id=\"1\">[1]</sup> A uranium-235 nucleus absorbs an incoming neutron, becomes unstable, and can split into two smaller nuclei (fission products), while releasing additional neutrons and a large amount of energy.<sup class=\"ref-cite\" data-ref-id=\"2\">[2]</sup> The exact products are probabilistic, but at least one neutron and energy are always released. One representative fission equation is:\n<span><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msubsup><mrow></mrow><mn>92</mn><mn>235</mn></msubsup><mi mathvariant=\"normal\">U</mi><mo>+</mo><msubsup><mrow></mrow><mn>0</mn><mn>1</mn></msubsup><mi mathvariant=\"normal\">n</mi><mo>→</mo><msubsup><mrow></mrow><mn>56</mn><mn>141</mn></msubsup><mrow><mi mathvariant=\"normal\">B</mi><mi mathvariant=\"normal\">a</mi></mrow><mo>+</mo><msubsup><mrow></mrow><mn>36</mn><mn>92</mn></msubsup><mrow><mi mathvariant=\"normal\">K</mi><mi mathvariant=\"normal\">r</mi></mrow><mo>+</mo><mn>3</mn> <msubsup><mrow></mrow><mn>0</mn><mn>1</mn></msubsup><mi mathvariant=\"normal\">n</mi><mo>+</mo><mi>Q</mi></mrow><annotation encoding=\"application/x-tex\">{}^{235}_{92}\\mathrm{U}+{}^{1}_{0}\\mathrm{n}\\rightarrow{}^{141}_{56}\\mathrm{Ba}+{}^{92}_{36}\\mathrm{Kr}+3\\,{}^{1}_{0}\\mathrm{n}+Q</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 1.1111em; vertical-align: -0.247em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.8641em;\"><span class=\"\" style=\"top: -2.453em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">92</span></span></span></span><span class=\"\" style=\"top: -3.113em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">235</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.247em;\"><span class=\"\"></span></span></span></span></span></span><span class=\"mord mathrm\">U</span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 1.1111em; vertical-align: -0.247em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.8641em;\"><span class=\"\" style=\"top: -2.453em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">0</span></span></span></span><span class=\"\" style=\"top: -3.113em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.247em;\"><span class=\"\"></span></span></span></span></span></span><span class=\"mord mathrm\">n</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">→</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 1.1111em; vertical-align: -0.247em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.8641em;\"><span class=\"\" style=\"top: -2.453em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">56</span></span></span></span><span class=\"\" style=\"top: -3.113em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">141</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.247em;\"><span class=\"\"></span></span></span></span></span></span><span class=\"mord\"><span class=\"mord mathrm\">Ba</span></span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 1.1111em; vertical-align: -0.247em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.8641em;\"><span class=\"\" style=\"top: -2.453em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">36</span></span></span></span><span class=\"\" style=\"top: -3.113em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">92</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.247em;\"><span class=\"\"></span></span></span></span></span></span><span class=\"mord\"><span class=\"mord mathrm\">Kr</span></span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 1.1111em; vertical-align: -0.247em;\"></span><span class=\"mord\">3</span><span class=\"mspace\" style=\"margin-right: 0.1667em;\"></span><span class=\"mord\"><span class=\"mord\"></span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.8641em;\"><span class=\"\" style=\"top: -2.453em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">0</span></span></span></span><span class=\"\" style=\"top: -3.113em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">1</span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.247em;\"><span class=\"\"></span></span></span></span></span></span><span class=\"mord mathrm\">n</span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right: 0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.8778em; vertical-align: -0.1944em;\"></span><span class=\"mord mathnormal\">Q</span></span></span></span></span></span>\nThe energy first appears as kinetic energy of fragments and neutrons, then rapidly converts to heat in fuel, which is used to generate steam and electricity.<sup class=\"ref-cite\" data-ref-id=\"2\">[2]</sup> The source of released energy is nuclear binding-energy difference (mass defect), not a loss of nucleon count. Heavy nuclei become more stable after splitting, and the missing mass converts to energy via:\n<span><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi><font face=\"Inter, sans-serif\"><br></font>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">E=mc^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.6833em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0576em;\">E</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.8641em;\"></span><span class=\"mord mathnormal\">m</span><span class=\"mord\"><span class=\"mord mathnormal\">c</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.8641em;\"><span class=\"\" style=\"top: -3.113em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span></span></span>Although each reaction has a tiny mass change, the large value of <span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">c^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.8141em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">c</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.8141em;\"><span class=\"\" style=\"top: -3.063em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span></span> makes the energy release substantial.<sup class=\"ref-cite\" data-ref-id=\"3\">[3]</sup>\nNuclear waste is produced as a by-product of sustained fission and contains neutron-rich unstable nuclei that continue radioactive decay after fuel removal. Activity decreases over time as short-lived isotopes decay, while longer-lived isotopes dominate later hazards. Because waste emits both radiation and heat, shielding, cooling, and containment are essential.<sup class=\"ref-cite\" data-ref-id=\"4\">[4]</sup>",
+          "detail": "Nuclear fission is the neutron-induced splitting of a heavy atomic nucleus into smaller nuclei. In reactor technology, uranium-235 is the isotope most commonly used.<sup class=\"ref-cite\" data-ref-id=\"1\">[1]</sup> A uranium-235 nucleus absorbs an incoming neutron, becomes unstable, and can split into two smaller nuclei (fission products), while releasing additional neutrons and a large amount of energy.<sup class=\"ref-cite\" data-ref-id=\"2\">[2]</sup> The exact products are probabilistic, but at least one neutron and energy are always released. One representative fission equation is:\n\n$${}^{235}_{92}\\mathrm{U}+{}^{1}_{0}\\mathrm{n}\\rightarrow{}^{141}_{56}\\mathrm{Ba}+{}^{92}_{36}\\mathrm{Kr}+3\\,{}^{1}_{0}\\mathrm{n}+Q$$\n\nThe energy first appears as kinetic energy of fragments and neutrons, then rapidly converts to heat in fuel, which is used to generate steam and electricity.<sup class=\"ref-cite\" data-ref-id=\"2\">[2]</sup> The source of released energy is nuclear binding-energy difference (mass defect), not a loss of nucleon count. Heavy nuclei become more stable after splitting, and the missing mass converts to energy via:\n\n$$E=mc^2$$\n\nAlthough each reaction has a tiny mass change, the large value of $c^2$ makes the energy release substantial.<sup class=\"ref-cite\" data-ref-id=\"3\">[3]</sup>\n\nNuclear waste is produced as a by-product of sustained fission and contains neutron-rich unstable nuclei that continue radioactive decay after fuel removal. Activity decreases over time as short-lived isotopes decay, while longer-lived isotopes dominate later hazards. Because waste emits both radiation and heat, shielding, cooling, and containment are essential.<sup class=\"ref-cite\" data-ref-id=\"4\">[4]</sup>",
           "flipEnabled": true,
-          "flipDirection": "x",
-          "detailEndImage": "",
+          "flipDirection": "y",
           "images": {
             "main": "uploads/media-vw6yfd-2.png",
             "position": {
-              "scale": 100,
-              "x": 50,
-              "y": 50
+              "scale": 101
             }
-          },
-          "showDetailBanner": false
+          }
         },
         {
           "tab": "Chain Reaction",
           "title": "The Chain Reaction",
           "description": "A nuclear chain reaction occurs when neutrons released in one fission event trigger further fissions, allowing the reaction to sustain itself.",
           "cta": "Learn more",
-          "detail": "To use fission for power generation, reactions must be considered collectively in reactor fuel. Neutrons released by one fission can induce fission in nearby nuclei, creating a chain reaction.<sup class=\"ref-cite\" data-ref-id=\"5\">[5]</sup>\n\nThe behavior is described by the neutron multiplication factor <span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>k</mi></mrow><annotation encoding=\"application/x-tex\">k</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.6944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0315em;\">k</span></span></span></span></span>, often represented conceptually as:\n\n<span><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>k</mi><mo>=</mo><mfrac><msub><mi>N</mi><mrow><mi mathvariant=\"normal\">f</mi><mo separator=\"true\">,</mo><mi mathvariant=\"normal\">n</mi><mi mathvariant=\"normal\">e</mi><mi mathvariant=\"normal\">x</mi><mi mathvariant=\"normal\">t</mi></mrow></msub><msub><mi>N</mi><mrow><mi mathvariant=\"normal\">f</mi><mo separator=\"true\">,</mo><mi mathvariant=\"normal\">c</mi><mi mathvariant=\"normal\">u</mi><mi mathvariant=\"normal\">r</mi><mi mathvariant=\"normal\">r</mi><mi mathvariant=\"normal\">e</mi><mi mathvariant=\"normal\">n</mi><mi mathvariant=\"normal\">t</mi></mrow></msub></mfrac></mrow><annotation encoding=\"application/x-tex\">k=\\frac{N_{\\mathrm{f,next}}}{N_{\\mathrm{f,current}}}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.6944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0315em;\">k</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 2.3324em; vertical-align: -0.9721em;\"></span><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 1.3603em;\"><span class=\"\" style=\"top: -2.314em;\"><span class=\"pstrut\" style=\"height: 3em;\"></span><span class=\"mord\"><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right: 0.109em;\">N</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.3361em;\"><span class=\"\" style=\"top: -2.55em; margin-left: -0.109em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\"><span class=\"mord mathrm mtight\" style=\"margin-right: 0.0778em;\">f</span><span class=\"mpunct mtight\">,</span><span class=\"mord mathrm mtight\">current</span></span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.2861em;\"><span class=\"\"></span></span></span></span></span></span></span></span><span class=\"\" style=\"top: -3.23em;\"><span class=\"pstrut\" style=\"height: 3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width: 0.04em;\"></span></span><span class=\"\" style=\"top: -3.677em;\"><span class=\"pstrut\" style=\"height: 3em;\"></span><span class=\"mord\"><span class=\"mord\"><span class=\"mord mathnormal\" style=\"margin-right: 0.109em;\">N</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.3361em;\"><span class=\"\" style=\"top: -2.55em; margin-left: -0.109em; margin-right: 0.05em;\"><span class=\"pstrut\" style=\"height: 2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\"><span class=\"mord mathrm mtight\" style=\"margin-right: 0.0778em;\">f</span><span class=\"mpunct mtight\">,</span><span class=\"mord mathrm mtight\">next</span></span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.2861em;\"><span class=\"\"></span></span></span></span></span></span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height: 0.9721em;\"><span class=\"\"></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span></span>\n\nThree regimes define reactor-state behavior:&nbsp;<div>- Subcritical (<span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>k</mi><mo>&lt;</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">k&lt;1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.7335em; vertical-align: -0.0391em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0315em;\">k</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></span>): reaction dies out.&nbsp;</div><div>- Critical (<span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">k=1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.6944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0315em;\">k</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></span>): steady, sustained reaction.&nbsp;</div><div>- Supercritical (<span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>k</mi><mo>&gt;</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">k&gt;1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.7335em; vertical-align: -0.0391em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0315em;\">k</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">&gt;</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></span>): reaction rate increases rapidly.&nbsp;</div><div>&nbsp;Sustained electricity generation requires keeping the reactor at a controlled critical state.<sup class=\"ref-cite\" data-ref-id=\"6\">[6]</sup>\n                </div>",
+          "detail": "To use fission for power generation, reactions must be considered collectively in reactor fuel. Neutrons released by one fission can induce fission in nearby nuclei, creating a chain reaction.<sup class=\"ref-cite\" data-ref-id=\"5\">[5]</sup>\n\nThe behavior is described by the neutron multiplication factor $k$, often represented conceptually as:\n\n$$k=\\frac{N_{\\mathrm{f,next}}}{N_{\\mathrm{f,current}}}$$\n\nThree regimes define reactor-state behavior:\n- Subcritical ($k<1$): reaction dies out.\n- Critical ($k=1$): steady, sustained reaction.\n- Supercritical ($k>1$): reaction rate increases rapidly.\n\nSustained electricity generation requires keeping the reactor at a controlled critical state.<sup class=\"ref-cite\" data-ref-id=\"6\">[6]</sup>",
           "flipEnabled": true,
-          "flipDirection": "x",
-          "detailEndImage": "",
+          "flipDirection": "y",
           "images": {
             "main": "uploads/media-ca3p5y-3.png",
             "position": {
               "scale": 101
             }
-          },
-          "showDetailBanner": false
+          }
         },
         {
           "tab": "Reactor Control",
           "title": "How a Nuclear Reactor Controls Fission",
           "description": "A nuclear reactor controls the chain reaction by carefully regulating neutron behavior, heat removal, and fuel composition to maintain a steady critical state.",
           "cta": "Learn more",
-          "detail": "The primary goal of a power reactor is to maintain a sustained, controlled critical chain reaction and avoid supercritical behavior. This is a key distinction between reactors and nuclear weapons.<sup class=\"ref-cite\" data-ref-id=\"7\">[7]</sup>\n\nMost conventional moderated reactors use enriched uranium fuel (typically around 4-5% uranium-235, compared with about 0.7% in natural uranium). As fission proceeds, fuel accumulates fission products and by-products; spent fuel is then removed and managed as nuclear waste.<sup class=\"ref-cite\" data-ref-id=\"1\">[1]</sup>\n\nCore control components include:\n- Moderator (often water or graphite): slows fast neutrons so they are more likely to induce fission in uranium-235.\n- Control rods: absorb neutrons; insertion depth adjusts reactivity and keeps the reactor near <span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">k=1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.6944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0315em;\">k</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></span>.\n- Coolant (often water): removes fission heat and transfers energy to turbines for electricity generation.\n\nReactor systems also include shielding and reinforced containment to prevent radioactive release and protect operators and environment.<sup class=\"ref-cite\" data-ref-id=\"4\">[4]</sup>",
+          "detail": "The primary goal of a power reactor is to maintain a sustained, controlled critical chain reaction and avoid supercritical behavior. This is a key distinction between reactors and nuclear weapons.<sup class=\"ref-cite\" data-ref-id=\"7\">[7]</sup>\n\nMost conventional moderated reactors use enriched uranium fuel (typically around 4-5% uranium-235, compared with about 0.7% in natural uranium). As fission proceeds, fuel accumulates fission products and by-products; spent fuel is then removed and managed as nuclear waste.<sup class=\"ref-cite\" data-ref-id=\"1\">[1]</sup>\n\nCore control components include:\n- Moderator (often water or graphite): slows fast neutrons so they are more likely to induce fission in uranium-235.\n- Control rods: absorb neutrons; insertion depth adjusts reactivity and keeps the reactor near $k=1$.\n- Coolant (often water): removes fission heat and transfers energy to turbines for electricity generation.\n\nReactor systems also include shielding and reinforced containment to prevent radioactive release and protect operators and environment.<sup class=\"ref-cite\" data-ref-id=\"4\">[4]</sup>",
           "flipEnabled": true,
-          "flipDirection": "x",
-          "detailEndImage": "",
+          "flipDirection": "y",
           "images": {
             "main": "uploads/media-g7puwv-4.png",
             "position": {
               "scale": 105
             }
-          },
-          "showDetailBanner": false
+          }
         },
         {
           "tab": "History & Safety",
@@ -198,12 +184,10 @@
           "cta": "Learn more",
           "detail": "Nuclear fission was discovered in the late 1930s. In 1942, the first self-sustaining chain reaction was achieved at the University of Chicago, proving that fission could be controlled and sustained.<sup class=\"ref-cite\" data-ref-id=\"8\">[8]</sup> This launched post-war reactor development and commercial nuclear power deployment.\n\nPublic attitudes were strongly influenced by major accidents, especially Chernobyl.<sup class=\"ref-cite\" data-ref-id=\"9\">[9]</sup> The Chernobyl event highlighted how reactor design details and operating decisions can interact dangerously. During a shutdown attempt, control-rod characteristics and operating conditions contributed to a rapid rise in reactivity and loss of effective chain-reaction control.\n\nLessons from such failures directly informed later reactor generations: removal of vulnerable design features, stronger negative feedback mechanisms, and enhanced engineered safety systems.<sup class=\"ref-cite\" data-ref-id=\"7\">[7]</sup>",
           "flipEnabled": true,
-          "flipDirection": "x",
-          "detailEndImage": "",
+          "flipDirection": "y",
           "images": {
             "main": "uploads/media-m7cngz-5.png"
-          },
-          "showDetailBanner": false
+          }
         },
         {
           "tab": "Future Fission",
@@ -212,8 +196,7 @@
           "cta": "Learn more",
           "detail": "Emerging technologies such as molten salt reactors and small modular reactors (SMRs) are all based on the same physical foundation: controlled fission and neutron management in the reactor core.<sup class=\"ref-cite\" data-ref-id=\"10\">[10]</sup>\n\nDifferences between designs are mainly engineering choices - safety architecture, scale, deployment model, thermal systems, and economics - rather than different nuclear physics.\n\nAcross all designs, safe operation still depends on maintaining a controlled, steady chain reaction.",
           "flipEnabled": true,
-          "flipDirection": "x",
-          "detailEndImage": "",
+          "flipDirection": "y",
           "images": {
             "main": "uploads/media-npw9zi-6.png",
             "position": {
@@ -221,163 +204,97 @@
               "y": 50,
               "x": 50
             }
-          },
-          "showDetailBanner": false
+          }
         }
       ]
     },
     "features": {
-      "headline": "Renewables",
-      "subheadline": "Renewables are now cheaper in most countries, and generate three times more jobs than fossil fuels’, but electric energy cannot be stored and must be produced and used in real time; with hydropower being the exception, most renewables remain variable and can be harder to use for grid regulation.",
+      "headline": "Better by every measure.",
+      "subheadline": "Nuclear energy provides reliable, carbon-free power day and night.",
       "cards": [
         {
-          "title": "1. Solar power",
-          "description": "Photovoltaic cell: captures sunlight and converts it into electricity.Sunlight is composed of discrete packets of energy called photons.",
-          "detail": "<p><span style=\"color: rgb(243, 244, 246); font-size: 0.95rem; font-weight: 600;\">More info</span></p><ul><li>Photons have energy expressed by the formula <span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>E</mi><mo>=</mo><mi>h</mi><mi>f</mi></mrow><annotation encoding=\"application/x-tex\">E = hf</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.6833em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.0576em;\">E</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.8889em; vertical-align: -0.1944em;\"></span><span class=\"mord mathnormal\">h</span><span class=\"mord mathnormal\" style=\"margin-right: 0.1076em;\">f</span></span></span></span></span>, where h is Planck's constant and f is the frequency of the wave.</li><li>Photovoltaic cells are composed of semiconductor materials such as silicon. When exposed to sunlight, electrons are dislodged from atoms and an electric current is created as electrons migrate across the cell.</li><li>An electric field is produced by dopants added to the semiconductor crystal lattice.</li><li>Silicon has four valence electrons; n-type dopants such as phosphorus (five valence electrons) donate weakly bound electrons and increase negative charge carriers.</li><li>p-type dopants such as boron (three valence electrons) create greater electron attraction.</li><li>Diffusion occurs when p-type and n-type silicon form a p-n junction; recombination and charge separation create an internal electric field and diode behavior, so current flows in one direction.</li><li>An inverter converts the original DC current to AC current for most electrical devices.</li></ul><p>Solar energy has variable output. In addition, the infrared part is not used to produce electricity, meaning PV cells use only part of available solar energy.</p><p>Solar energy can be converted into electricity in different ways:</p><ul><li>Direct conversion: voltage/current generated by photon absorption in a doped semiconductor (common for silicon solar cells).</li><li>Thermal conversion: heat converted into electrical energy by thermionic, thermoelectric, magnetohydrodynamic devices, or steam turbines.</li><li>Biological processes: growing crops (for example algae) and converting to methane for steam power; this route has low efficiency and requires extensive land area.</li></ul><p>PV panels are relatively low-cost to run, and rooftop installation can have limited impact on living conditions.</p>\n      <div class=\"detail-reference-block\">\n        <h5 class=\"detail-subtitle\">References</h5>\n        <ol class=\"detail-reference-list\">\n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.0.references.0.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">U.S. Department of Energy (n.d.) Solar Photovoltaic Cell Basics.</span> <a href=\"https://www.energy.gov/eere/solar/solar-photovoltaic-cell-basics\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://www.energy.gov/eere/solar/solar-photovoltaic-cell-basics</a>\n        </li>\n      \n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.0.references.1.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">PTO (n.d.) Photovoltaic technology overview, Vol. 25(2), p.44.</span> <a href=\"https://aip.brightspotcdn.com/PTO.v25.i2.44_1.online.pdf\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://aip.brightspotcdn.com/PTO.v25.i2.44_1.online.pdf</a>\n        </li>\n      \n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.0.references.2.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">Yaqoob, S.J. et al. (2019) The potential of solar energy in diverse conversion systems.</span> <a href=\"https://www.tandfonline.com/doi/epdf/10.1080/01430750.2019.1592774?needAccess=true\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://www.tandfonline.com/doi/epdf/10.1080/01430750.2019.1592774?needAccess=true</a>\n        </li>\n      </ol>\n      </div>",
-          "references": [
-            {
-              "text": "U.S. Department of Energy (n.d.) Solar Photovoltaic Cell Basics.",
-              "url": "https://www.energy.gov/eere/solar/solar-photovoltaic-cell-basics"
-            },
-            {
-              "text": "PTO (n.d.) Photovoltaic technology overview, Vol. 25(2), p.44.",
-              "url": "https://aip.brightspotcdn.com/PTO.v25.i2.44_1.online.pdf"
-            },
-            {
-              "text": "Yaqoob, S.J. et al. (2019) The potential of solar energy in diverse conversion systems.",
-              "url": "https://www.tandfonline.com/doi/epdf/10.1080/01430750.2019.1592774?needAccess=true"
-            }
-          ],
-          "cta": "Learn more",
-          "flipEnabled": true,
-          "flipDirection": "y",
-          "detailEndImage": "",
-          "image": "uploads/media-k8uxap-7.png"
+          "title": "High Energy Density",
+          "description": "A single pellet the size of a fingertip contains the energy equivalent of one ton of coal.",
+          "image": ""
         },
         {
-          "title": "2. Wind power",
-          "description": "Turns wind energy into kinetic energy using the aerodynamic force from the rotor blades.",
-          "detail": "How do they work?\n\nMore info:\nWhen wind flows across a blade, air pressure on one side decreases. The pressure difference across both sides creates lift and drag. Lift is stronger than drag, so the rotor spins. The rotor connects to a generator (through drivetrain components) and enables practical electricity generation.\n\nThe kinetic energy of a mass m with velocity v is:\n- $E_k = \\frac{1}{2}mv^2$\nThe air mass can be expressed using air density and swept volume.\nPower is energy divided by time, and wind power scales with the cube of wind speed ($v^3$).\n\nSince velocity is cubed, wind that is twice as fast can provide roughly eight times as much power. This is one reason turbines are tall: wind is typically faster and less turbulent at higher altitude.\n\nTheoretical extraction is limited by the Betz limit (59.3%); in practice, turbine efficiency commonly falls in about the 34-45% range.\n\nDesign:\n- Rotor blades: airfoil behavior similar to airplane wings; pressure differences cause rotation.\n- Nacelle: contains gears and generator; gears raise low blade-speed rotation to generator-speed rotation.\n- Tower: supports nacelle and blades at a height suitable for stronger, steadier wind (often around 50-100 m).\n\nWind power is becoming an increasingly popular energy choice, particularly in the UK, with major planned offshore capacity growth.",
-          "references": [
-            {
-              "text": "Energy Education (n.d.) Wind turbine.",
-              "url": "https://energyeducation.ca/encyclopedia/Wind_turbine"
-            },
-            {
-              "text": "Leipzig University (n.d.) Energy fundamentals: Wind power.",
-              "url": "https://home.uni-leipzig.de/energy/energy-fundamentals/15.htm"
-            },
-            {
-              "text": "ScienceDirect (n.d.) Wind energy technical resource.",
-              "url": "https://pdf.sciencedirectassets.com"
-            }
-          ],
-          "cta": "Learn more",
-          "flipEnabled": true,
-          "flipDirection": "y",
-          "detailEndImage": "",
-          "image": "uploads/media-ftntjq-8.png",
-          "position": {
-            "scale": 112
-          }
+          "title": "Zero Emissions",
+          "description": "Nuclear power plants produce no greenhouse gas emissions during operation.",
+          "image": ""
         },
         {
-          "title": "3. Hydroelectric power",
-          "description": "Harnesses the power of water in motion to generate electricity.\n            Supplies 17% of the world's energy and 71% of the world's renewable energy.It is a flexible and reliable source of energy because output can be adjusted to demand.",
-          "detail": "<p><br></p><h5 class=\"detail-subtitle\">More info</h5><p>Hydropower has been used for over 2000 years (for example, historical watermills). Cost of hydroelectricity is relatively low, making it competitive in many systems.</p><p>A hydro plant generally includes three parts: an electric plant (generation), a reservoir (stored water), and a dam (flow control).</p><p>Water at height stores gravitational potential energy (<span><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>U</mi><mo>=</mo><mi>m</mi><mi>g</mi><mi>h</mi></mrow><annotation encoding=\"application/x-tex\">U = mgh</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height: 0.6833em;\"></span><span class=\"mord mathnormal\" style=\"margin-right: 0.109em;\">U</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right: 0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height: 0.8889em; vertical-align: -0.1944em;\"></span><span class=\"mord mathnormal\">m</span><span class=\"mord mathnormal\" style=\"margin-right: 0.0359em;\">g</span><span class=\"mord mathnormal\">h</span></span></span></span></span>). As water is released through a penstock, potential energy converts to kinetic energy and drives turbine blades. Turbine rotation drives the generator rotor and converts mechanical energy into electrical energy.</p><p>Hydropower also has trade-offs: river damming can disrupt ecosystems and migration routes, projects can require very high upfront cost, and some developments displace communities.</p><h5 class=\"detail-subtitle\">Generator physics</h5><ul><li>Generators convert mechanical energy into electrical energy.</li><li>They operate on Faraday's law of electromagnetic induction.</li><li>Electromotive force (emf) is induced when a conductor cuts a magnetic field.</li></ul><h5 class=\"detail-subtitle\">Challenges</h5><p>Hydroelectric generators can face vibration and temperature-rise issues. Uneven temperature distribution can affect insulation integrity and reliability. Thermal stress during startup/shutdown can contribute to failure risk, and thermal expansion can deform stator/rotor components.</p>\n      <div class=\"detail-reference-block\">\n        <h5 class=\"detail-subtitle\">References</h5>\n        <ol class=\"detail-reference-list\">\n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.2.references.0.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">Mirzaei Mahmoud Abadi, V. et al. (2016) Hydroelectric energy: advantages and disadvantages.</span> <a href=\"https://www.researchgate.net/profile/Vahid-Mirzaei-Mahmoud-Abadi/publication/275094706_Hydroelectric_Energy_Advantages_and_Disadvantages/links/5e48e070458515072da0b71f/Hydroelectric-Energy-Advantages-and-Disadvantages.pdf\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://www.researchgate.net/profile/Vahid-Mirzaei-Mahmoud-Abadi/publication/275094706_Hydroelectric_Energy_Advantages_and_Disadvantages/links/5e48e070458515072da0b71f/Hydroelectric-Energy-Advantages-and-Disadvantages.pdf</a>\n        </li>\n      \n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.2.references.1.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">Liu, X. et al. (2025) Hydropower generator operation and reliability analysis.</span> <a href=\"https://www.mdpi.com/1996-1073/18/5/1074\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://www.mdpi.com/1996-1073/18/5/1074</a>\n        </li>\n      \n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.2.references.2.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">LibreTexts (n.d.) Electric generators and electromotive force.</span> <a href=\"https://phys.libretexts.org/Bookshelves/College_Physics/College_Physics_1e_(OpenStax)/23%3A_Electromagnetic_Induction_AC_Circuits_and_Electrical_Technologies/23.08%3A_Electric_Generators\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://phys.libretexts.org/Bookshelves/College_Physics/College_Physics_1e_(OpenStax)/23%3A_Electromagnetic_Induction_AC_Circuits_and_Electrical_Technologies/23.08%3A_Electric_Generators</a>\n        </li>\n      </ol>\n      </div>",
-          "references": [
-            {
-              "text": "Mirzaei Mahmoud Abadi, V. et al. (2016) Hydroelectric energy: advantages and disadvantages.",
-              "url": "https://www.researchgate.net/profile/Vahid-Mirzaei-Mahmoud-Abadi/publication/275094706_Hydroelectric_Energy_Advantages_and_Disadvantages/links/5e48e070458515072da0b71f/Hydroelectric-Energy-Advantages-and-Disadvantages.pdf"
-            },
-            {
-              "text": "Liu, X. et al. (2025) Hydropower generator operation and reliability analysis.",
-              "url": "https://www.mdpi.com/1996-1073/18/5/1074"
-            },
-            {
-              "text": "LibreTexts (n.d.) Electric generators and electromotive force.",
-              "url": "https://phys.libretexts.org/Bookshelves/College_Physics/College_Physics_1e_(OpenStax)/23%3A_Electromagnetic_Induction_AC_Circuits_and_Electrical_Technologies/23.08%3A_Electric_Generators"
-            }
-          ],
-          "cta": "Learn more",
-          "flipEnabled": true,
-          "flipDirection": "y",
-          "detailEndImage": "",
-          "image": "uploads/media-ni5a27-9.png"
-        },
-        {
-          "title": "4. Geothermal Energy",
-          "description": "This is the renewable energy contained as heat in the Earth’s interior. It represents 0.3% of the world’s total electrical energy.",
-          "detail": "More info:\n\nLocation:\n- The Earth is formed by three concentric zones: crust, mantle, and core. The crust and upper mantle form the lithosphere, split into tectonic plates.\n- Geothermal resources are concentrated in areas with higher heat flow, often near plate boundaries where hot springs and steam vents appear (for example, the Pacific Ring of Fire).\n- Heat also rises where crust is sufficiently thin.\n- Below the crust lies hot and molten rock (magma), with heat partly produced by radioactive decay of elements such as potassium and uranium.\n\nGeothermal energy is used directly (for example district heating) and in industry.\n\nGeothermal power plants use hydrothermal resources from dry steam wells or hot-water wells; extracted steam/hot fluid drives turbines to generate electricity.\n\nGeothermal plants can emit far less acid-rain-causing sulfur compounds and less carbon dioxide than similarly sized fossil-fuel plants.\n\nTypes of Geothermal Power plants:\n- Dry steam plants: steam from reservoir drives turbine directly.\n- Flash steam plants: high-pressure hot water is converted to steam that drives turbines; cooled condensate is reinjected.\n- Binary-cycle plants: geothermal heat transfers to a secondary fluid with lower boiling point; the secondary vapor drives the turbine.",
-          "references": [
-            {
-              "text": "U.S. Energy Information Administration (n.d.) Geothermal power plants explained.",
-              "url": "https://www.eia.gov/energyexplained/geothermal/geothermal-power-plants.php"
-            }
-          ],
-          "cta": "Learn more",
-          "flipEnabled": true,
-          "flipDirection": "y",
-          "detailEndImage": "",
-          "image": "uploads/media-9fpp0x-10.png",
-          "position": {
-            "scale": 258
-          }
-        },
-        {
-          "title": "5.  Comparison of Energy Sources",
-          "description": "Feature comparison between Nuclear and Renewables.",
-          "detail": "<div class=\"detail-table-wrap\">\n          <table class=\"detail-table\">\n            <thead><tr><th>Feature</th><th>Nuclear</th><th>Renewables</th></tr></thead>\n            <tbody><tr><td>Energy density</td><td>Very high</td><td>Lower</td></tr><tr><td>Reliability</td><td>Continuous baseload</td><td>Often intermittent</td></tr><tr><td>Carbon emissions</td><td>Very low</td><td>Very low</td></tr><tr><td>Land use</td><td>Small</td><td>Often large</td></tr><tr><td>Waste</td><td>Radioactive</td><td>Minimal</td></tr></tbody>\n          </table>\n        </div>\n      <h5 class=\"detail-subtitle\">Societal views and impacts</h5><p>Public Perception</p><ul><li>Nuclear: safety, waste, and past accidents are major factors.</li><li>Renewables: generally positive, but local objections and ecological concerns persist.</li></ul><p>The choice between nuclear and renewables is not a simple argument. Both have roles in a zero-carbon future. Nuclear offers stable and reliable output, but with high costs and significant waste-management concerns. Renewables are among the cheapest and fastest-growing options, but still require progress in storage and grid integration. The best mix depends on each country's infrastructure, resources, and policy goals.</p>\n      <div class=\"detail-reference-block\">\n        <h5 class=\"detail-subtitle\">References</h5>\n        <ol class=\"detail-reference-list\">\n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.4.references.0.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">International Energy Agency (n.d.) Renewable electricity generation by technology, 1990-2026.</span> <a href=\"https://www.iea.org/data-and-statistics/charts/renewable-electricity-generation-by-technology-1990-2026\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://www.iea.org/data-and-statistics/charts/renewable-electricity-generation-by-technology-1990-2026</a>\n        </li>\n      \n        <li class=\"detail-reference-item\">\n          <span data-material=\"features.cards.4.references.1.text\" contenteditable=\"true\" class=\"editable-field\" style=\"outline: rgba(34, 211, 238, 0.3) dashed 1px; cursor: text;\">United Nations (n.d.) What is renewable energy?</span> <a href=\"https://www.un.org/en/climatechange/what-is-renewable-energy\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"detail-reference-link\">https://www.un.org/en/climatechange/what-is-renewable-energy</a>\n        </li>\n      </ol>\n      </div>",
-          "references": [
-            {
-              "text": "International Energy Agency (n.d.) Renewable electricity generation by technology, 1990-2026.",
-              "url": "https://www.iea.org/data-and-statistics/charts/renewable-electricity-generation-by-technology-1990-2026"
-            },
-            {
-              "text": "United Nations (n.d.) What is renewable energy?",
-              "url": "https://www.un.org/en/climatechange/what-is-renewable-energy"
-            }
-          ],
-          "cta": "Learn more",
-          "flipEnabled": true,
-          "flipDirection": "y",
-          "detailEndImage": "",
-          "image": "uploads/media-f4odw4-11.png",
-          "position": {
-            "scale": 136
-          }
+          "title": "24/7 Reliability",
+          "description": "Nuclear energy operates at full power more than 93% of the time, making it the most reliable energy source.",
+          "image": ""
         }
-      ],
-      "coverMediaRatio": 43
+      ]
     },
     "safety": {
-      "title": "Uncompromising Safety.",
-      "description": "Advanced passive safety systems use natural laws of physics to shut down automatically without human intervention.",
-      "imageLabel": "Safety Visualization",
-      "detailEndImage": "",
-      "images": {
-        "main": ""
-      },
-      "flipEnabled": true,
-      "cta": "Learn more"
+      "items": [
+        {
+          "tab": "Safety Overview",
+          "title": "Uncompromising Safety.",
+          "description": "Advanced passive safety systems use natural laws of physics to shut down automatically without human intervention.",
+          "cta": "Learn more",
+          "detail": "Modern nuclear reactors incorporate multiple layers of safety systems designed to prevent accidents and contain any potential releases. Passive safety features use gravity, natural convection, and other physical phenomena rather than active mechanical systems or human intervention.",
+          "imageLabel": "Safety Visualization",
+          "detailImageShrinkRatio": 52,
+          "images": {
+            "main": "uploads/media-i7g9kd-7.png",
+            "position": {
+              "scale": 127
+            }
+          }
+        },
+        {
+          "tab": "Section 2",
+          "title": "New Section 2",
+          "description": "Edit this section description.",
+          "cta": "Learn more",
+          "detail": "Add detail content here.",
+          "imageLabel": "",
+          "detailImageShrinkRatio": 60,
+          "images": {
+            "main": ""
+          }
+        },
+        {
+          "tab": "Section 3",
+          "title": "New Section 3",
+          "description": "Edit this section description.",
+          "cta": "Learn more",
+          "detail": "Add detail content here.",
+          "imageLabel": "",
+          "detailImageShrinkRatio": 60,
+          "images": {
+            "main": ""
+          }
+        }
+      ]
     },
     "sustainability": {
       "title": "Green. Clean. Future.",
       "description": "Nuclear energy has one of the smallest carbon footprints of any energy source, protecting our air quality and climate.",
       "imageLabel": "Ecosystem Visualization",
-      "detailEndImage": "",
       "images": {
         "main": ""
       }
     },
     "innovation": {
-      "title": "Limitless Potential.",
-      "description": "Small Modular Reactors (SMRs) bring flexible, scalable power to remote communities and industrial hubs.",
-      "imageLabel": "SMR Visualization",
-      "detailEndImage": "",
-      "images": {
-        "main": ""
-      }
+      "items": [
+        {
+          "tab": "Innovation Overview",
+          "title": "Limitless Potential.",
+          "description": "Small Modular Reactors (SMRs) bring flexible, scalable power to remote communities and industrial hubs.",
+          "cta": "Learn more",
+          "detail": "Small Modular Reactors represent the next generation of nuclear technology. These compact, factory-built reactors offer enhanced safety, reduced construction time, and flexible deployment options for diverse energy needs.",
+          "imageLabel": "SMR Visualization",
+          "detailImageShrinkRatio": 60,
+          "images": {
+            "main": ""
+          }
+        }
+      ]
     },
     "closerLook": {
       "headline": "Take a closer look.",
@@ -459,63 +376,11 @@
           {
             "id": 10,
             "text": "International Atomic Energy Agency (IAEA) (n.d.). What are Small Modular Reactors (SMRs)? Available at: https://www.iaea.org/newscenter/news/what-are-small-modular-reactors-smrs (Accessed: 12 February 2026)."
-          },
-          {
-            "id": 11,
-            "text": "United Nations (n.d.) What is Renewable Energy? Available at: https://www.un.org/en/climatechange/what-is-renewable-energy (Accessed: 14 February 2026)."
-          },
-          {
-            "id": 12,
-            "text": "U.S. Department of Energy (n.d.) Solar Photovoltaic Cell Basics. Available at: https://www.energy.gov/eere/solar/solar-photovoltaic-cell-basics (Accessed: 14 February 2026)."
-          },
-          {
-            "id": 13,
-            "text": "Energy Education (n.d.) Wind Turbine. Available at: https://energyeducation.ca/encyclopedia/Wind_turbine (Accessed: 14 February 2026)."
-          },
-          {
-            "id": 14,
-            "text": "Leipzig University (n.d.) Energy Fundamentals: Wind Power. Available at: https://home.uni-leipzig.de/energy/energy-fundamentals/15.htm (Accessed: 14 February 2026)."
-          },
-          {
-            "id": 15,
-            "text": "Mirzaei Mahmoud Abadi, V. et al. (2016) Hydroelectric Energy Advantages and Disadvantages. Available at: https://www.researchgate.net/profile/Vahid-Mirzaei-Mahmoud-Abadi/publication/275094706_Hydroelectric_Energy_Advantages_and_Disadvantages/links/5e48e070458515072da0b71f/Hydroelectric-Energy-Advantages-and-Disadvantages.pdf (Accessed: 14 February 2026)."
-          },
-          {
-            "id": 16,
-            "text": "Liu, X. et al. (2025) Generator operation and reliability in hydropower systems. Energies, 18(5), 1074. Available at: https://www.mdpi.com/1996-1073/18/5/1074 (Accessed: 14 February 2026)."
-          },
-          {
-            "id": 17,
-            "text": "U.S. Energy Information Administration (n.d.) Geothermal Power Plants. Available at: https://www.eia.gov/energyexplained/geothermal/geothermal-power-plants.php (Accessed: 14 February 2026)."
-          },
-          {
-            "id": 18,
-            "text": "International Energy Agency (n.d.) Renewable Electricity Generation by Technology, 1990-2026. Available at: https://www.iea.org/data-and-statistics/charts/renewable-electricity-generation-by-technology-1990-2026 (Accessed: 14 February 2026)."
           }
         ]
       },
       "githubLinkText": "View on GitHub",
       "credits": "Designed by "
-    },
-    "MSR": {
-      "headline": "Alternative Fission Design - Molten Salt Reactors (MSRs)",
-      "items": [
-        {
-          "title": "1. What are MSRs?",
-          "description": "An alternative fission reactor design using molten salts as fuel carrier, coolant, moderator, or some combination.",
-          "detail": "<h5 class='detail-subtitle'>Section</h5><p>1. What are MSRs?</p>\n\n<h5 class='detail-subtitle'>Key Sentences</h5><ul><li>Fission based reactors have a massive range of different designs, each having their own advantages and disadvantages over the others.</li><li>One of the most interesting and potentially advantageous of these designs is molten salt reactors.</li><li>Molten Salt Reactors are an alternative design of fission reactor to the currently used LWRs.</li><li>They use molten salts, often fluoride based such as Lithium-Beryllium Fluoride, for some significant part of the reactor, such as carrying the fuel or acting as a coolant or moderator.</li><li>The 3 primary classes of MSRs are – Graphite based, Homogeneous, Heterogeneous.</li></ul>\n\n<h5 class='detail-subtitle'>Details</h5><p><strong>Summary for Main Page –</strong></p><p>Fission based reactors have a massive range of different designs, each having their own advantages and disadvantages over the others. One of the most interesting and potentially advantageous of these designs is molten salt reactors.</p><p>These types of reactors use molten salt within the core for a variety of purposes such as carrying the fuel or acting as a coolant or moderator, or some combination of these, and it is the molten salt that allows for significant advantages over standard reactors, while also providing major engineering challenges.</p><p><strong>What are MSRs?</strong></p><p>Molten Salt Reactors are an alternative design of fission reactor to the currently used LWRs. They use molten salts, often fluoride based such as Lithium-Beryllium Fluoride, for some significant part of the reactor, such as carrying the fuel or acting as a coolant or moderator. They are significantly more complicated than standard reactors, requiring complicated plumbing for the salt to be properly cycled, however have massive benefits, such as increased efficiency and significantly reduced waste, over standard reactors.</p><p>There are various designs possible, using different salts, moderators, neutron speeds etc. Classifications were formalized in 2023s IAEA-TRS-489 MSR technology report [1] pg. 32</p><p>The 3 primary classes of MSRs are –</p><ul><li><strong>Graphite based</strong>: There is a presence of graphite in the core i.e. as a moderator.</li><li><strong>Homogeneous</strong>: There are no structural materials separating the fuel salt and coolant/moderator in the core. I.e. the core is filled entirely by the fuel salt</li><li><strong>Heterogeneous</strong>: There are structural materials separating the fuel salt from the coolant/moderator.</li></ul><p>Other reactors designs exist outside these classes, but the majority of designs and research are encapsulated by these 3.</p><p>Within the classes themselves, there are more sub-classes based on what salts/fuel type the reactors use etc., the below graphic from the 2024 Gen IV International Forum (GIF) [2] pg. 21showing some of these. Other diagrams are available on page 36 and 37 of the IAEA report that goes into more detail [1].</p>"
-        },
-        {
-          "title": "2. How MSRs Work",
-          "description": "Same fission physics as LWRs, but molten salt enables fuel pumping, cleaning, and safety mechanisms such as freeze-plug draining.",
-          "detail": "<h5 class='detail-subtitle'>Section</h5><p>2. How MSRs Work</p>\n\n<h5 class='detail-subtitle'>Key Sentences</h5><ul><li>MSRs are similar to standard reactors in that fissile material is placed into a reactor, undergoes nuclear fission, releasing energy and excess neutrons that continue this chain reaction.</li><li>The primary difference of MSRs is that molten salts have a significant role in the function of the reactor.</li><li>The majority use molten salt as a solvent for the fuel, allowing it to be pumped around the system, allowing various operations such as cleaning the fuel of fission products, or using a ‘freeze plug’ to drain the core if the temperature gets too high.</li></ul>\n\n<h5 class='detail-subtitle'>Details</h5><h5 class='detail-subtitle'>Similarities to LWRs</h5><p>MSRs are similar to standard reactors in that fissile material is placed into a reactor, undergoes nuclear fission (splitting into 2 smaller, more stable, nuclei with a small mass deficit, md), releasing energy (given by E = mdc2, assuming constant kinetic energy during the reaction), and excess neutrons that cause fission in other nuclei to continue this chain reaction until there is not enough fissile material left in the reactor, compared to the amount of other material (such as fission products, moderator or coolant), causing this chain reaction to slow and become inefficient. The energy produced is absorbed by the coolant, which is pumped through a heat exchanger, boiling water and rotating a turbine so generate electricity. (see more about standard reactors and nuclear fission here <a href='#highlights'>Fission Introduction</a>)</p>\n\n<h5 class='detail-subtitle'>Differences to LWRs</h5><p>The primary difference of MSRs is that, as the name suggests, molten salts have a significant role in the function of the reactor. The majority use molten salt as a solvent for the fuel, allowing it to be pumped around the system, allowing various operations such as cleaning the fuel of fission products, or using a ‘freeze plug’ to drain the core if the temperature gets too high.</p>"
-        },
-        {
-          "title": "3. Benefits and challenges",
-          "description": "Recycling/cleaning, alternative fuel cycles, passive safety and waste advantages—plus the key engineering challenges holding deployment back.",
-          "detail": "<h5 class='detail-subtitle'>Section</h5><p>3. Benefits and challenges</p>\n\n<h5 class='detail-subtitle'>Key Sentences</h5><ul><li>The primary benefits of these types of reactors are due to additional capabilities that standard reactors are unable to complete such as fuel recycling/cleaning, alternative fuel sources, increased passive safety, and reduced/less dangerous waste and byproducts.</li><li>While the base physics behind MSRs is understood and proven, due to their design complexity, they have various engineering and technical challenges that has prevented the technology being used on a larger scale.</li><li>These challenges include reactor longevity and fuel cleaning / reprocessing.</li></ul>\n\n<h5 class='detail-subtitle'>Details</h5><p>The mechanics and engineering behind each MSR design significantly vary due to different material choices, capability goals, fuel choice etc., but the primary benefits of these types of reactors are due to additional capabilities that standard reactors are unable to complete such as –</p><ul><li><strong>Fuel Recycling / cleaning</strong></li><li><strong>Alternative fuel sources</strong></li><li><strong>Increased Passive Safety</strong></li><li><strong>Reduced/less dangerous waste and byproducts</strong></li></ul>\n\n<h5 class='detail-subtitle'>Fuel Recycling / Cleaning</h5><p>The majority of designs incorporate built in chemical processing of the molten salts, removing fission products that would absorb thermal neutrons instead of fuel nuclei, meaning the reactor can work longer without needing refuelling to maintain sufficient power output and will be more efficient as less neutrons are wasted by being absorbed by other nuclei aside from the fuel.</p>\n\n<h5 class='detail-subtitle'>Alternative Fuel Sources</h5><p>While MSRs still require fissile fuel, the same as LWRs, some designs include built in breeder circuits, where non fissile material is converted into fissile material, which then is dissolved into the salt and used as fuel. Some designs place these circuits surrounding the core, using neutrons from the fission reactions to produce more fuel for the reactions. One example of this is Thorium-232, which decays naturally once it absorbs a neutron through to Uranium-233, which is fissile and used as fuel inside the core itself.</p><p>Uranium-233 produces an average of 2.50 ± 0.03 thermal neutrons per fission[3]. These neutrons are used either to continue fission or, in designs with fertile material surrounding the core, starting this decay chain again to produce more Uranium.</p><p>Other designs use a similar method to recycle spent fuel from other reactors and from itself as all actinides (elements usually found in spent nuclear fuel) can be used by an MSR, either within a breeder or the core itself. [2] pg17.</p>\n\n<h5 class='detail-subtitle'>Increased Passive Safety</h5><p>MSRs have various intrinsic safety features that LWRs can’t meet due to differences in designs. For example, MSRs work at near atmospheric pressures, meaning should components become damaged, nuclear material is significantly less likely to be dispersed over a wide area, rather than just the area of the damage. Also, these lower pressures mean the components are under less mechanical pressure and so are less likely to catastrophically fail in the first place.</p><p>Another example is due to the properties of the salt, as it heats, it reduces the reactivity of the core, regardless of what task(s) it is performing. For example, as the salt expands as it heats, separating the fissile nuclei so fewer neutrons reach other nuclei at thermal speeds and so reactivity decreases. This gives MSRs a strong negative reactivity-temperature coefficient, providing higher core stability and allowing for passive reactor shutdown if the temperature rises too high.</p>\n\n<h5 class='detail-subtitle'>Reduced / Less Dangerous Waste and Byproducts</h5><p>As mentioned, MSRs are able to make use of all Actinide elements in some way or another, which are commonly found in spent nuclear fuel. This ability to use spent fuel means that the eventual waste/byproducts of MSRs is significantly less radioactive than that of other types of reactors. A consequence of this is that the byproducts of MSRs cannot be used as nuclear weapons at the same scale or effectiveness as LWRs or other reactors. The UK National Nuclear Laboratory produced the following graphic demonstrating the closed fuel cycle that MSRs allow (MSR part is in green).</p>\n\n<h5 class='detail-subtitle'>Challenges surrounding MSRs</h5><p>While the base physics behind MSRs is understood and proven, due to their design complexity, they have various engineering and technical challenges that has prevented the technology being used on a larger scale. These challenges include –</p><ul><li><strong>Reactor Longevity</strong>: Due to the corrosivity of molten salts, the pipes and other reactor parts are estimated to require replacement approximately every 5-7 years.</li><li><strong>Fuel Cleaning</strong>: Effective removal of byproducts is a major difficulty in MSR designs. For gaseous waste, the mixture of various byproducts causes standard filters to become clogged, more effective designs must be designed to prevent build up, significantly decreasing efficiency over time. For solid/liquid waste, the options are either to replace the salt as a whole, massively increasing the overall waste of the reactor (open fuel cycles), or by reprocessing the fuel salt either in small batches frequently or in its entirety every few years, both having their technical challenges for optimizing the fuel use and power generation of the reactor (closed fuel cycles).</li></ul>\n\n<h5 class='detail-subtitle'>References</h5><ol class='detail-reference-list'><li class='detail-reference-item'><a class='detail-reference-link' href='https://www-pub.iaea.org/MTCD/Publications/PDF/STI-DOC-010-489_web.pdf' target='_blank' rel='noopener noreferrer'>https://www-pub.iaea.org/MTCD/Publications/PDF/STI-DOC-010-489_web.pdf</a> (Feb 12 26)</li><li class='detail-reference-item'><a class='detail-reference-link' href='https://www.gen-4.org/resources/webinars/education-and-training-series-97-overview-and-update-msr-activities-within-gif' target='_blank' rel='noopener noreferrer'>https://www.gen-4.org/resources/webinars/education-and-training-series-97-overview-and-update-msr-activities-within-gif</a> (Feb 13, 26)</li><li class='detail-reference-item'>Gordeeva, L.D., Smirenkin, G.N. An empirical formula for the average number of fission neutrons. At Energy 14, 562–566 (1964) <a class='detail-reference-link' href='https://doi.org/10.1007/BF01119969' target='_blank' rel='noopener noreferrer'>https://doi.org/10.1007/BF01119969</a> (Feb 13, 26)</li></ol>"
-        }
-      ]
     }
   },
   "admin": {

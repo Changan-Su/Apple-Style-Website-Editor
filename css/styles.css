@@ -3484,3 +3484,274 @@ body.edit-mode .id-animation-selector {
   visibility: hidden;
 }
 
+/* ========== Text Image Left: Section Switcher ========== */
+
+.til-switcher-btn {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.til-switcher-btn:focus {
+  outline: none;
+}
+
+.til-switcher-btn--active {
+  border-width: 1px;
+}
+
+/* TIL morphing animation support */
+.til-title {
+  transform-origin: left top;
+}
+
+.til-description {
+  transform-origin: left top;
+}
+
+.til-title--morphing,
+.til-description--morphing {
+  will-change: transform, opacity;
+}
+
+/* TIL container layout */
+.til-container {
+  position: relative;
+}
+
+/* TIL left area positioning */
+.til-left-area {
+  z-index: 2;
+  padding: 40px 0;
+}
+
+/* TIL switcher container at top */
+.til-switcher-container {
+  z-index: 3;
+  flex-shrink: 0;
+}
+
+/* Hide switcher when no items */
+.til-switcher:empty {
+  display: none;
+}
+
+.til-switcher:empty + .til-collapsed-content,
+.til-switcher:empty ~ .til-detail-content {
+  margin-top: 0;
+}
+
+/* Adjust collapsed content spacing */
+.til-collapsed-content {
+  transition: opacity 0.3s ease;
+}
+
+.til-detail-content {
+  transition: opacity 0.3s ease;
+}
+
+/* TIL title animation origin for Apple-style morphing */
+.til-title {
+  transform-origin: left center;
+}
+
+/* Smooth transitions for all states */
+.til-left-area > * {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* TIL right area - shrinks when detail expanded */
+.til-right-area {
+  z-index: 1;
+}
+
+.til-container[data-til-detail-state="expanded"] .til-right-area {
+  /* Width controlled by inline style based on detailImageShrinkRatio */
+}
+
+/* TIL collapsed content visibility */
+.til-collapsed-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.til-container[data-til-detail-state="expanded"] .til-collapsed-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* TIL detail content visibility */
+.til-detail-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.til-container[data-til-detail-state="expanded"] .til-detail-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* TIL image wrapper */
+.til-image-wrapper {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* TIL detail state natural-size image */
+.til-detail-natural-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%;
+  max-height: 90%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+/* Make image wrapper display flex to center content in detail state */
+.til-container[data-til-detail-state="expanded"] .til-image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none !important;
+}
+
+/* Only show the detail panel matching the active index */
+.til-detail-panel {
+  display: none;
+  overflow-y: auto;
+}
+
+.flip-card[data-til-active-index="0"] .til-detail-panel[data-til-detail-index="0"],
+.flip-card[data-til-active-index="1"] .til-detail-panel[data-til-detail-index="1"],
+.flip-card[data-til-active-index="2"] .til-detail-panel[data-til-detail-index="2"],
+.flip-card[data-til-active-index="3"] .til-detail-panel[data-til-detail-index="3"],
+.flip-card[data-til-active-index="4"] .til-detail-panel[data-til-detail-index="4"],
+.flip-card[data-til-active-index="5"] .til-detail-panel[data-til-detail-index="5"],
+.flip-card[data-til-active-index="6"] .til-detail-panel[data-til-detail-index="6"],
+.flip-card[data-til-active-index="7"] .til-detail-panel[data-til-detail-index="7"],
+.flip-card[data-til-active-index="8"] .til-detail-panel[data-til-detail-index="8"],
+.flip-card[data-til-active-index="9"] .til-detail-panel[data-til-detail-index="9"] {
+  display: block;
+}
+
+/* TIL transition classes for section switch animation */
+.til-title-shrink {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.til-title-expand {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.til-image-container.til-image-fade-out {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.til-image-container.til-image-fade-in {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+/* Detail panel: banner image shrink (configurable ratio, image not stretched to fill) */
+.detail-content-wrap--banner-shrunk .detail-banner-media {
+  min-height: 120px;
+  max-height: min(60vh, calc(var(--detail-banner-shrink-ratio, 60) * 1vh));
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+/* Detail banner: natural size mode (displays image at its uploaded pixel dimensions) */
+.detail-banner-media--natural {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+}
+
+.detail-banner-img-natural {
+  display: block;
+  max-width: calc(var(--detail-banner-shrink-ratio, 60) * 1%);
+  max-height: 50vh;
+  height: auto;
+  width: auto;
+  object-fit: none;
+  border-radius: 12px;
+}
+
+/* Detail shrink ratio controls (edit mode) */
+.detail-shrink-controls {
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+}
+
+.detail-shrink-controls label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.detail-shrink-controls input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  cursor: pointer;
+}
+
+.detail-shrink-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #22d3ee;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
+}
+
+.detail-shrink-controls .detail-shrink-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 36px;
+}
+
+.detail-shrink-controls .reset-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.65rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.detail-shrink-controls .reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
