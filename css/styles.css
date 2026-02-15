@@ -2636,6 +2636,96 @@ body.edit-mode .img-position-controls {
   color: white;
 }
 
+/* ========== Card Grid Cover Ratio Controls ========== */
+.card-grid-ratio-controls {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 26;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.edit-mode .card-grid-ratio-controls {
+  display: flex;
+}
+
+.card-grid-ratio-controls label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.card-grid-ratio-controls input[type="range"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+       appearance: none;
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  cursor: pointer;
+}
+
+.card-grid-ratio-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #22d3ee;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
+}
+
+.card-grid-ratio-controls input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #22d3ee;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
+}
+
+.card-grid-ratio-controls .card-grid-ratio-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 42px;
+  text-align: right;
+}
+
+.card-grid-ratio-controls .reset-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.card-grid-ratio-controls .reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
 .focus-within\:border-accent-cyan\/50:focus-within {
   border-color: rgb(34 211 238 / 0.5);
 }

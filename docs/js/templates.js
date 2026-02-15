@@ -210,11 +210,17 @@ window.TemplateRegistry = (function() {
     return parts.join('\n\n');
   }
 
+  function hasExistingReferenceBlock(html) {
+    if (!html || typeof html !== 'string') return false;
+    return /detail-reference-block|detail-reference-list/i.test(html);
+  }
+
   function formatCardGridDetail(detail, references, referencesPath) {
     const raw = normalizeLegacyComparisonTable(String(detail || '')).trim();
     if (!raw) return 'Detail content goes here. Click to edit in edit mode.';
 
     if (/<(p|ul|ol|li|table|div|h\d|blockquote|pre|code)\b/i.test(raw)) {
+      if (hasExistingReferenceBlock(raw)) return raw;
       return `${raw}${renderCardReferences(references, referencesPath)}`;
     }
 
@@ -298,7 +304,9 @@ window.TemplateRegistry = (function() {
     } = options;
 
     const closeTarget = closeTargetValue ? `${closeTargetAttr}="${closeTargetValue}"` : '';
-    const detailMaterialAttr = detailIsHtml ? '' : `data-material="${detailPath}"`;
+    const detailMaterialAttr = detailIsHtml
+      ? `data-material="${detailPath}" data-ref-content="true"`
+      : `data-material="${detailPath}"`;
     const bannerEnabled = showBanner !== false;
     const bannerControlAttrs = detailBannerPath
       ? `data-detail-banner-configurable="true" data-detail-banner-path="${detailBannerPath}" data-detail-banner-enabled="${bannerEnabled ? 'true' : 'false'}"`
@@ -607,6 +615,11 @@ window.TemplateRegistry = (function() {
   function cardGridTemplate(sectionId, data, material) {
     const cards = data.cards || [];
     const overlayKey = `${sectionId}-cards`;
+    const rawCoverRatio = Number(data.coverMediaRatio);
+    const coverRatio = Number.isFinite(rawCoverRatio)
+      ? Math.max(25, Math.min(75, Math.round(rawCoverRatio)))
+      : 57;
+    const textRatio = 100 - coverRatio;
     
     const cardHtml = cards.map((card, i) => {
       const imgUrl = getImageUrl(card.image, material);
@@ -622,11 +635,11 @@ window.TemplateRegistry = (function() {
       const showDetailBanner = card.showDetailBanner !== false;
 
       const frontContent = `
-        <div class="h-full rounded-[24px] overflow-hidden bg-surface-dark flex flex-col group hover:bg-surface-darker transition-colors duration-300">
-          <div class="h-[320px] bg-surface-darker w-full relative bg-cover bg-center" style="${bgStyle}" data-material-img="features.cards.${i}.image">
+        <div class="h-full rounded-[24px] overflow-hidden bg-surface-dark grid card-grid-front-layout group hover:bg-surface-darker transition-colors duration-300" style="grid-template-rows: ${coverRatio}% ${textRatio}%;" data-card-grid-front-layout="true">
+          <div class="h-full bg-surface-darker w-full relative bg-cover bg-center" style="${bgStyle}" data-material-img="features.cards.${i}.image">
             ${videoLayer}
           </div>
-          <div class="p-8 flex flex-col gap-3 flex-1">
+          <div class="p-8 flex flex-col gap-3 min-h-0">
             <h3 class="text-2xl font-semibold text-white" data-material="features.cards.${i}.title">${card.title || ''}</h3>
             <p class="text-base text-text-muted leading-relaxed" data-material="features.cards.${i}.description">
               ${card.description || ''}

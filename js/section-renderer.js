@@ -110,6 +110,7 @@ window.SectionRenderer = (function() {
 
       // Initialize image position controls
       initializeImagePositionControls();
+      initializeCardGridCoverRatioControls();
 
       // Render LaTeX formulas
       if (window.LatexRenderer && window.LatexRenderer.renderAll) {
@@ -630,6 +631,89 @@ window.SectionRenderer = (function() {
         window.ModeManager.patchMaterial(fullPath, { ...posObj, [prop]: value });
       }
     }
+  }
+
+  function clampCardGridCoverRatio(value) {
+    return Math.max(25, Math.min(75, Math.round(value)));
+  }
+
+  function applyCardGridCoverRatio(sectionEl, ratio) {
+    if (!sectionEl) return;
+    const safeRatio = clampCardGridCoverRatio(ratio);
+    const textRatio = 100 - safeRatio;
+    sectionEl.querySelectorAll('[data-card-grid-front-layout="true"]').forEach((layoutEl) => {
+      layoutEl.style.gridTemplateRows = `${safeRatio}% ${textRatio}%`;
+    });
+  }
+
+  function saveCardGridCoverRatio(sectionId, ratio) {
+    if (!material || !sectionId) return;
+    const safeRatio = clampCardGridCoverRatio(ratio);
+    const fullPath = `${pageKey}.${sectionId}.coverMediaRatio`;
+
+    if (window.ModeManager && window.ModeManager.captureSnapshot) {
+      window.ModeManager.captureSnapshot();
+    }
+
+    setNestedValue(material, fullPath, safeRatio);
+
+    if (window.ModeManager) {
+      window.ModeManager.updateMaterialInMemory(material);
+      const state = window.ModeManager.getState();
+      if (state.dataMode === 'online') {
+        window.ModeManager.patchMaterial(fullPath, safeRatio);
+      }
+    }
+  }
+
+  function initializeCardGridCoverRatioControls() {
+    document.querySelectorAll('[data-template="card-grid"]').forEach(sectionEl => {
+      const sectionId = sectionEl.getAttribute('data-section-id');
+      const grid = sectionEl.querySelector('.card-grid-collection');
+      if (!sectionId || !grid) return;
+      if (grid.querySelector('.card-grid-ratio-controls')) return;
+
+      const savedRatio = Number(getNestedValue(material, `${pageKey}.${sectionId}.coverMediaRatio`));
+      const currentRatio = Number.isFinite(savedRatio) ? clampCardGridCoverRatio(savedRatio) : 57;
+
+      const controls = document.createElement('div');
+      controls.className = 'card-grid-ratio-controls';
+      controls.innerHTML = `
+        <label>Cover</label>
+        <input type="range" min="25" max="75" step="1" value="${currentRatio}" data-card-grid-ratio="input" title="Card cover/media height ratio">
+        <span class="card-grid-ratio-value" data-card-grid-ratio="value">${currentRatio}%</span>
+        <button class="reset-btn" data-card-grid-ratio="reset">Reset</button>
+      `;
+
+      controls.addEventListener('click', (e) => e.stopPropagation());
+      controls.addEventListener('mouseenter', (e) => e.stopPropagation());
+
+      const ratioInput = controls.querySelector('[data-card-grid-ratio="input"]');
+      const ratioValue = controls.querySelector('[data-card-grid-ratio="value"]');
+      const resetBtn = controls.querySelector('[data-card-grid-ratio="reset"]');
+
+      ratioInput.addEventListener('input', () => {
+        const ratio = clampCardGridCoverRatio(parseInt(ratioInput.value, 10));
+        ratioValue.textContent = `${ratio}%`;
+        applyCardGridCoverRatio(sectionEl, ratio);
+      });
+
+      ratioInput.addEventListener('change', () => {
+        const ratio = clampCardGridCoverRatio(parseInt(ratioInput.value, 10));
+        ratioInput.value = String(ratio);
+        ratioValue.textContent = `${ratio}%`;
+        saveCardGridCoverRatio(sectionId, ratio);
+      });
+
+      resetBtn.addEventListener('click', () => {
+        ratioInput.value = '57';
+        ratioValue.textContent = '57%';
+        applyCardGridCoverRatio(sectionEl, 57);
+        saveCardGridCoverRatio(sectionId, 57);
+      });
+
+      grid.appendChild(controls);
+    });
   }
 
   function getNestedValue(obj, path) {
