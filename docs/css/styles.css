@@ -3521,6 +3521,7 @@ body.edit-mode .id-animation-selector {
 .til-left-area {
   z-index: 2;
   padding: 40px 0;
+  overflow: hidden; /* Prevent content from sliding outside container */
 }
 
 /* TIL switcher container at top */
@@ -3539,23 +3540,54 @@ body.edit-mode .id-animation-selector {
   margin-top: 0;
 }
 
-/* Adjust collapsed content spacing */
-.til-collapsed-content {
-  transition: opacity 0.3s ease;
+/* TIL content wrapper for carousel-style slides */
+.til-content-wrapper {
+  overflow: hidden;
+  position: relative;
 }
 
+/* Smooth transitions for content slides */
+.til-collapsed-content,
 .til-detail-content {
+  will-change: transform, opacity;
+  width: 100%;
+}
+
+/* Right wrapper for carousel-style slides */
+.til-right-wrapper {
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.til-right-area {
+  z-index: 1;
+  overflow: visible;
+}
+
+/* TIL title and description */
+.til-title {
   transition: opacity 0.3s ease;
 }
 
-/* TIL title animation origin for Apple-style morphing */
-.til-title {
-  transform-origin: left center;
+.til-description {
+  transition: opacity 0.3s ease;
 }
 
-/* Smooth transitions for all states */
-.til-left-area > * {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+/* Remove old FLIP morphing classes - no longer needed */
+.til-title--morphing,
+.til-description--morphing {
+  /* Kept for compatibility */
+}
+
+/* Image wrapper slide animations */
+.til-image-wrapper {
+  will-change: transform, opacity;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Right wrapper overflow management */
+.til-right-wrapper {
+  overflow: hidden;
 }
 
 /* TIL right area - shrinks when detail expanded */

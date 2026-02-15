@@ -3569,18 +3569,18 @@ window.EditorSystem = (function() {
     const handle = e.target.closest('.til-resize-handle');
     if (!handle) return;
     
-    const rightArea = handle.closest('.til-right-area');
+    const rightWrapper = handle.closest('.til-right-wrapper');
     const container = handle.closest('.til-container');
-    if (!rightArea || !container) return;
+    if (!rightWrapper || !container) return;
     
     e.preventDefault();
     
-    const currentWidth = rightArea.offsetWidth;
+    const currentWidth = rightWrapper.offsetWidth;
     const containerWidth = container.offsetWidth;
     const currentRatio = (currentWidth / containerWidth) * 100;
     
     tilResizeState = {
-      rightArea,
+      rightWrapper,
       container,
       startX: e.clientX,
       startRatio: currentRatio,
@@ -3597,13 +3597,13 @@ window.EditorSystem = (function() {
     const deltaRatio = (deltaX / tilResizeState.containerWidth) * 100;
     const newRatio = Math.max(30, Math.min(80, tilResizeState.startRatio + deltaRatio));
     
-    tilResizeState.rightArea.style.width = `${newRatio}%`;
+    tilResizeState.rightWrapper.style.width = `${newRatio}%`;
   }
 
   function handleTILResizeEnd(e) {
     if (!tilResizeState) return;
     
-    const finalWidth = tilResizeState.rightArea.offsetWidth;
+    const finalWidth = tilResizeState.rightWrapper.offsetWidth;
     const containerWidth = tilResizeState.container.offsetWidth;
     const finalRatio = Math.round((finalWidth / containerWidth) * 100);
     

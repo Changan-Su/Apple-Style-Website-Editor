@@ -899,61 +899,66 @@ window.TemplateRegistry = (function() {
             <div class="til-left-area absolute left-0 top-0 w-[500px] h-full flex flex-col transition-all duration-500"
                  data-til-left-area>
               
-              <!-- Section Switcher (always at top) -->
+              <!-- Section Switcher (fixed at top) -->
               <div class="til-switcher-container mb-8 transition-opacity duration-300" data-til-switcher-container>
                 <div class="til-switcher flex flex-wrap gap-2 items-center" data-til-switcher data-collection-container="true" data-collection-type="text-image-left" data-collection-path="${sectionId}.items">
                   ${switcherButtons}
                 </div>
               </div>
               
-              <!-- Title/Description (shown when collapsed) -->
-              <div class="til-collapsed-content transition-opacity duration-300 flex-1 flex flex-col justify-center"
-                   data-til-collapsed-content>
-                <h2 class="til-title text-[64px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05] mb-6" 
-                    data-material="${materialPrefix}.title"
-                    data-til-title>${first.title || ''}</h2>
-                <p class="til-description text-[24px] font-normal text-text-muted leading-[1.4] mb-8" 
-                   data-material="${materialPrefix}.description"
-                   data-til-description>${first.description || ''}</p>
-                <button class="til-learn-more-btn w-fit px-6 py-3 rounded-full ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-black/80'} font-medium transition-colors flex items-center gap-2"
-                        data-til-learn-more
-                        data-material="${materialPrefix}.cta">
-                  ${first.cta || 'Learn more'}
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </button>
-              </div>
-              
-              <!-- Detail Content (shown when expanded) -->
-              <div class="til-detail-content opacity-0 pointer-events-none transition-opacity duration-300 flex-1 flex flex-col overflow-hidden"
-                   data-til-detail-content>
-                <div class="flex flex-col gap-6 h-full">
-                  <div class="flex items-start justify-between">
-                    <h3 class="text-[40px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-tight"
-                        data-til-detail-title>${first.title || ''}</h3>
-                    <button class="til-close-btn w-10 h-10 rounded-full ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-black/10 hover:bg-black/20'} transition-colors flex items-center justify-center flex-shrink-0 ml-4"
-                            data-til-close>
-                      <svg class="w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-black'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+              <!-- Content Wrapper (slides as a whole) -->
+              <div class="til-content-wrapper flex-1 relative overflow-hidden" data-til-content-wrapper>
+                <!-- Title/Description (shown when collapsed) -->
+                <div class="til-collapsed-content absolute inset-0 transition-all duration-400 flex flex-col justify-center"
+                     data-til-collapsed-content>
+                  <h2 class="til-title text-[64px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05] mb-6" 
+                      data-material="${materialPrefix}.title"
+                      data-til-title>${first.title || ''}</h2>
+                  <p class="til-description text-[24px] font-normal text-text-muted leading-[1.4] mb-8" 
+                     data-material="${materialPrefix}.description"
+                     data-til-description>${first.description || ''}</p>
+                  <button class="til-learn-more-btn w-fit px-6 py-3 rounded-full ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-black/80'} font-medium transition-colors flex items-center gap-2"
+                          data-til-learn-more
+                          data-material="${materialPrefix}.cta">
+                    ${first.cta || 'Learn more'}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+                
+                <!-- Detail Content (shown when expanded) -->
+                <div class="til-detail-content absolute inset-0 opacity-0 pointer-events-none transition-all duration-400 flex flex-col overflow-hidden"
+                     data-til-detail-content>
+                  <div class="flex flex-col gap-6 h-full">
+                    <div class="flex items-start justify-between">
+                      <h3 class="text-[40px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-tight"
+                          data-til-detail-title>${first.title || ''}</h3>
+                      <button class="til-close-btn w-10 h-10 rounded-full ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-black/10 hover:bg-black/20'} transition-colors flex items-center justify-center flex-shrink-0 ml-4"
+                              data-til-close>
+                        <svg class="w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-black'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    <div class="w-16 h-[2px] ${theme === 'dark' ? 'bg-accent-blue' : 'bg-black'} flex-shrink-0"></div>
+                    <div class="til-detail-text text-[17px] ${theme === 'dark' ? 'text-white/80' : 'text-text-primaryLight/80'} font-normal leading-relaxed latex-content overflow-y-auto pr-2 flex-1"
+                         data-til-detail-text
+                         data-material="${materialPrefix}.detail">${first.detail || 'Detail content goes here.'}</div>
                   </div>
-                  <div class="w-16 h-[2px] ${theme === 'dark' ? 'bg-accent-blue' : 'bg-black'} flex-shrink-0"></div>
-                  <div class="til-detail-text text-[17px] ${theme === 'dark' ? 'text-white/80' : 'text-text-primaryLight/80'} font-normal leading-relaxed latex-content overflow-y-auto pr-2 flex-1"
-                       data-til-detail-text
-                       data-material="${materialPrefix}.detail">${first.detail || 'Detail content goes here.'}</div>
                 </div>
               </div>
             </div>
             
-            <!-- Right Image Area -->
-            <div class="til-right-area absolute right-0 top-0 h-full transition-all duration-500"
+            <!-- Right Image Area Wrapper (slides with left content) -->
+            <div class="til-right-wrapper absolute right-0 top-0 h-full transition-all duration-500 overflow-hidden"
                  style="width: calc(100% - 500px - 80px);"
-                 data-til-right-area>
-              <div class="til-image-wrapper w-full h-full ${theme === 'dark' ? 'bg-surface-dark' : 'bg-white shadow-xl shadow-black/5'} rounded-[32px] relative overflow-hidden bg-cover bg-center transition-all duration-500" 
-                   style="${bgStyle0}"
-                   data-material-img="${materialPrefix}.images.main"
-                   data-til-image-wrapper>
-                ${videoLayer0}
-                <div class="absolute inset-0 flex items-center justify-center ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} text-3xl font-semibold til-image-label" 
-                     data-material="${materialPrefix}.imageLabel">${first.imageLabel || ''}</div>
+                 data-til-right-wrapper>
+              <div class="til-right-area w-full h-full relative" data-til-right-area>
+                <div class="til-image-wrapper w-full h-full ${theme === 'dark' ? 'bg-surface-dark' : 'bg-white shadow-xl shadow-black/5'} rounded-[32px] relative overflow-hidden bg-cover bg-center transition-all duration-500" 
+                     style="${bgStyle0}"
+                     data-material-img="${materialPrefix}.images.main"
+                     data-til-image-wrapper>
+                  ${videoLayer0}
+                  <div class="absolute inset-0 flex items-center justify-center ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} text-3xl font-semibold til-image-label" 
+                       data-material="${materialPrefix}.imageLabel">${first.imageLabel || ''}</div>
+                </div>
               </div>
             </div>
           </div>

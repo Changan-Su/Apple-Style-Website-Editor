@@ -518,7 +518,9 @@ window.SectionRenderer = (function() {
 
       // Get elements
       const leftArea = container.querySelector('[data-til-left-area]');
-      const rightArea = container.querySelector('[data-til-right-area]');
+      const contentWrapper = container.querySelector('[data-til-content-wrapper]');
+      const rightWrapper = container.querySelector('[data-til-right-wrapper]');
+      const rightArea = rightWrapper?.querySelector('[data-til-right-area]');
       const collapsedContent = container.querySelector('[data-til-collapsed-content]');
       const detailContent = container.querySelector('[data-til-detail-content]');
       const titleEl = container.querySelector('[data-til-title]');
@@ -531,9 +533,11 @@ window.SectionRenderer = (function() {
       const closeBtn = container.querySelector('[data-til-close]');
       const switcherBtns = container.querySelectorAll('.til-switcher-btn[data-til-index]');
 
-      if (!leftArea || !rightArea || !collapsedContent || !detailContent || !titleEl || !descEl || !imageWrapper) {
+      if (!leftArea || !contentWrapper || !rightWrapper || !rightArea || !collapsedContent || !detailContent || !titleEl || !descEl || !imageWrapper) {
         console.error('[TIL] Missing required elements for section:', sectionId, {
           leftArea: !!leftArea,
+          contentWrapper: !!contentWrapper,
+          rightWrapper: !!rightWrapper,
           rightArea: !!rightArea,
           collapsedContent: !!collapsedContent,
           detailContent: !!detailContent,
@@ -571,8 +575,8 @@ window.SectionRenderer = (function() {
         collapsedContent.style.pointerEvents = 'none';
 
         // Shrink and reposition right image area
-        rightArea.style.width = `${shrinkRatio}%`;
-        rightArea.style.right = '0';
+        rightWrapper.style.width = `${shrinkRatio}%`;
+        rightWrapper.style.right = '0';
         
         // Switch to natural-size image display in detail state
         // Get current image URL from imageWrapper's background-image or data attribute
@@ -672,7 +676,7 @@ window.SectionRenderer = (function() {
           
           // Add resize handle for editor mode
           if (window.EditorSystem && document.body.classList.contains('edit-mode')) {
-            addTILResizeHandle(rightArea);
+            addTILResizeHandle(rightWrapper);
           }
           
           // Render LaTeX if available
@@ -685,8 +689,8 @@ window.SectionRenderer = (function() {
       }
 
       // Helper function to add resize handle
-      function addTILResizeHandle(rightArea) {
-        if (rightArea.querySelector('.til-resize-handle')) return; // Already has handle
+      function addTILResizeHandle(rightWrapperEl) {
+        if (rightWrapperEl.querySelector('.til-resize-handle')) return; // Already has handle
         
         const handle = document.createElement('div');
         handle.className = 'til-resize-handle edit-mode-only';
@@ -701,8 +705,8 @@ window.SectionRenderer = (function() {
           handle.style.background = 'rgba(59, 130, 246, 0.8)';
         });
         
-        rightArea.appendChild(handle);
-        console.log('[TIL] Resize handle added to rightArea');
+        rightWrapperEl.appendChild(handle);
+        console.log('[TIL] Resize handle added to rightWrapper');
       }
 
       // Function to collapse detail view
@@ -711,7 +715,7 @@ window.SectionRenderer = (function() {
         isAnimating = true;
 
         // Remove resize handle
-        const handle = rightArea.querySelector('.til-resize-handle');
+        const handle = rightWrapper.querySelector('.til-resize-handle');
         if (handle) {
           handle.remove();
           console.log('[TIL] Resize handle removed');
@@ -722,7 +726,7 @@ window.SectionRenderer = (function() {
         detailContent.style.pointerEvents = 'none';
 
         // Expand right image area back
-        rightArea.style.width = 'calc(100% - 500px - 80px)';
+        rightWrapper.style.width = 'calc(100% - 500px - 80px)';
         
         // Restore background image display
         const currentItem = items[currentIndex];
@@ -762,55 +766,46 @@ window.SectionRenderer = (function() {
         }, 300);
       }
 
-      // Function to switch to different section
+      // Function to switch to different section (Carousel-style slide - whole content area)
       function switchToIndex(targetIndex) {
         if (targetIndex === currentIndex || isAnimating) return;
         if (targetIndex < 0 || targetIndex >= items.length) return;
         isAnimating = true;
 
         const item = items[targetIndex];
-
-        // FLIP Phase 1: Capture current state and morph to outgoing button
-        const titleRect = titleEl.getBoundingClientRect();
-        const outBtn = switcherBtns[currentIndex];
-        const outBtnRect = outBtn ? outBtn.getBoundingClientRect() : null;
-
-        if (outBtnRect) {
-          // Calculate scale and translate for shrinking title to button
-          const scaleX = outBtnRect.width / titleRect.width;
-          const scaleY = outBtnRect.height / titleRect.height;
-          const dx = outBtnRect.left - titleRect.left;
-          const dy = outBtnRect.top - titleRect.top;
-
-          // Add morphing classes for GPU acceleration
-          titleEl.classList.add('til-title--morphing');
-          descEl.classList.add('til-description--morphing');
-
-          // Animate title shrinking to button position
-          titleEl.style.transition = 'transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s ease';
-          titleEl.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
-          titleEl.style.opacity = '0.3';
-
-          // Fade out description
-          descEl.style.transition = 'opacity 0.25s ease';
-          descEl.style.opacity = '0';
-        }
-
-        // Start image fade-out in parallel
-        imageWrapper.classList.add('til-image-fade-out');
-        if (imageLabelEl) imageLabelEl.classList.add('til-image-fade-out');
-
-        // FLIP Phase 2 & 3: After shrink animation, swap content and expand from incoming button
+        const theme = sectionId === 'safety' || sectionId === 'innovation' ? 'dark' : 'light';
+        
+        // Determine slide direction based on index relationship
+        const slideDirection = targetIndex > currentIndex ? 'left' : 'right';
+        const slideDistance = slideDirection === 'left' ? -100 : 100;
+        
+        // Get the active content layer (collapsed or detail)
+        const activeContent = detailState === 'expanded' ? detailContent : collapsedContent;
+        
+        // Phase 1: Slide out current content and image together
+        activeContent.style.transition = 'transform 0.45s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.45s ease';
+        activeContent.style.transform = `translateX(${-slideDistance}%)`;
+        activeContent.style.opacity = '0';
+        
+        rightWrapper.style.transition = 'transform 0.45s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.45s ease';
+        rightWrapper.style.transform = `translateX(${-slideDistance}%)`;
+        rightWrapper.style.opacity = '0';
+        
+        // Phase 2: Update content while off-screen
         setTimeout(() => {
-          // Update content
+          // Update text content
           titleEl.textContent = item.title || '';
           descEl.textContent = item.description || '';
           if (imageLabelEl) imageLabelEl.textContent = item.imageLabel || '';
-          titleEl.setAttribute('data-material', `${sectionId}.title`);
-          descEl.setAttribute('data-material', `${sectionId}.description`);
-          if (imageLabelEl) imageLabelEl.setAttribute('data-material', `${sectionId}.imageLabel`);
-          imageWrapper.setAttribute('data-material-img', `${sectionId}.images.main`);
-
+          
+          // Update data attributes
+          const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
+          const itemPath = hasItemsArray ? `${sectionId}.items.${targetIndex}` : sectionId;
+          titleEl.setAttribute('data-material', `${itemPath}.title`);
+          descEl.setAttribute('data-material', `${itemPath}.description`);
+          if (imageLabelEl) imageLabelEl.setAttribute('data-material', `${itemPath}.imageLabel`);
+          imageWrapper.setAttribute('data-material-img', `${itemPath}.images.main`);
+          
           // Update detail content
           if (detailTitleEl) detailTitleEl.textContent = item.title || '';
           if (detailTextEl) {
@@ -819,123 +814,164 @@ window.SectionRenderer = (function() {
               : (item.detail || 'Detail content goes here.');
             detailTextEl.innerHTML = detailHtml;
           }
-
-          // Update image
-          if (item.isVideo && item.imgUrl) {
-            let video = imageWrapper.querySelector('video');
-            if (video) {
-              video.src = item.imgUrl;
-              video.style.display = '';
-            } else {
-              video = document.createElement('video');
-              video.src = item.imgUrl;
-              video.className = 'absolute inset-0 w-full h-full object-cover z-0';
-              video.setAttribute('autoplay', '');
-              video.setAttribute('muted', '');
-              video.setAttribute('loop', '');
-              video.setAttribute('playsinline', '');
-              video.setAttribute('preload', 'metadata');
-              video.setAttribute('data-material-video', 'true');
-              imageWrapper.insertBefore(video, imageWrapper.firstChild);
-            }
-            imageWrapper.style.backgroundImage = '';
-            imageWrapper.style.backgroundSize = '';
-            imageWrapper.style.backgroundPosition = '';
-          } else {
-            const video = imageWrapper.querySelector('video');
-            if (video) video.style.display = 'none';
-            imageWrapper.style.backgroundImage = item.imgUrl ? `url(${item.imgUrl})` : '';
-            if (item.bgStyle) {
-              const bgSizeMatch = item.bgStyle.match(/background-size:\s*([^;]+)/);
-              const posMatch = item.bgStyle.match(/background-position:\s*([^;]+)/);
-              imageWrapper.style.backgroundSize = bgSizeMatch ? bgSizeMatch[1].trim() : 'cover';
-              imageWrapper.style.backgroundPosition = posMatch ? posMatch[1].trim() : 'center';
-            } else {
-              imageWrapper.style.backgroundSize = 'cover';
-              imageWrapper.style.backgroundPosition = 'center';
-            }
-          }
-
+          
+          // Update image content
+          updateImageContent(item, targetIndex);
+          
           // Update button states
           container.setAttribute('data-til-active-index', String(targetIndex));
-          switcherBtns.forEach((btn) => {
-            const idx = parseInt(btn.getAttribute('data-til-index'), 10);
-            const isActive = idx === targetIndex;
-            btn.classList.toggle('til-switcher-btn--active', isActive);
-            if (theme === 'dark') {
-              btn.classList.toggle('bg-white', isActive);
-              btn.classList.toggle('text-black', isActive);
-              btn.classList.toggle('border-white', isActive);
-              btn.classList.remove('bg-black', 'border-black');
-              btn.classList.toggle('bg-transparent', !isActive);
-              btn.classList.toggle('text-white', !isActive);
-              btn.classList.toggle('border-white/30', !isActive);
-            } else {
-              btn.classList.toggle('bg-black', isActive);
-              btn.classList.toggle('text-white', isActive);
-              btn.classList.toggle('border-black', isActive);
-              btn.classList.remove('bg-white', 'border-white');
-              btn.classList.toggle('bg-transparent', !isActive);
-              btn.classList.toggle('text-text-primaryLight', !isActive);
-              btn.classList.toggle('border-black/20', !isActive);
-            }
+          updateButtonStates(targetIndex, theme);
+          
+          // Position content for slide in from opposite side
+          activeContent.style.transition = 'none';
+          activeContent.style.transform = `translateX(${slideDistance}%)`;
+          activeContent.style.opacity = '0';
+          
+          rightWrapper.style.transition = 'none';
+          rightWrapper.style.transform = `translateX(${slideDistance}%)`;
+          rightWrapper.style.opacity = '0';
+          
+          // Force reflow
+          void activeContent.offsetWidth;
+          
+          // Phase 3: Slide in new content
+          requestAnimationFrame(() => {
+            activeContent.style.transition = 'transform 0.45s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.45s ease';
+            activeContent.style.transform = 'translateX(0)';
+            activeContent.style.opacity = '1';
+            
+            rightWrapper.style.transition = 'transform 0.45s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.45s ease';
+            rightWrapper.style.transform = 'translateX(0)';
+            rightWrapper.style.opacity = '1';
           });
-
-          // Image fade in
-          imageWrapper.classList.remove('til-image-fade-out');
-          imageWrapper.classList.add('til-image-fade-in');
-          if (imageLabelEl) {
-            imageLabelEl.classList.remove('til-image-fade-out');
-            imageLabelEl.classList.add('til-image-fade-in');
-          }
-
-          // Prepare for expand animation: position title at incoming button
-          const inBtn = switcherBtns[targetIndex];
-          if (inBtn) {
-            const inBtnRect = inBtn.getBoundingClientRect();
-            const newTitleRect = titleEl.getBoundingClientRect();
-            
-            // Calculate transform from incoming button to final title position
-            const inScaleX = inBtnRect.width / newTitleRect.width;
-            const inScaleY = inBtnRect.height / newTitleRect.height;
-            const inDx = inBtnRect.left - newTitleRect.left;
-            const inDy = inBtnRect.top - newTitleRect.top;
-
-            // Set initial position (at button) without transition
-            titleEl.style.transition = 'none';
-            titleEl.style.transform = `translate(${inDx}px, ${inDy}px) scale(${inScaleX}, ${inScaleY})`;
-            titleEl.style.opacity = '0.3';
-            
-            // Force reflow
-            void titleEl.offsetWidth;
-
-            // Animate to final position
-            requestAnimationFrame(() => {
-              titleEl.style.transition = 'transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s ease';
-              titleEl.style.transform = 'none';
-              titleEl.style.opacity = '1';
-              
-              descEl.style.transition = 'opacity 0.35s ease';
-              descEl.style.opacity = '1';
-            });
-          }
-
+          
           currentIndex = targetIndex;
-
-          // Cleanup after animations complete
+          
+          // Cleanup
           setTimeout(() => {
-            titleEl.classList.remove('til-title--morphing');
-            descEl.classList.remove('til-description--morphing');
-            titleEl.style.transition = '';
-            titleEl.style.transform = '';
-            titleEl.style.opacity = '';
-            descEl.style.transition = '';
-            descEl.style.opacity = '';
-            imageWrapper.classList.remove('til-image-fade-in');
-            if (imageLabelEl) imageLabelEl.classList.remove('til-image-fade-in');
+            activeContent.style.transition = '';
+            activeContent.style.transform = '';
+            activeContent.style.opacity = '';
+            rightWrapper.style.transition = '';
+            rightWrapper.style.transform = '';
+            rightWrapper.style.opacity = '';
             isAnimating = false;
-          }, 380);
-        }, outBtnRect ? 360 : 0);
+            
+            // Render LaTeX if in detail state
+            if (detailState === 'expanded' && window.LatexRenderer && window.LatexRenderer.renderAll) {
+              window.LatexRenderer.renderAll();
+            }
+          }, 480);
+        }, 450);
+      }
+      
+      // Helper function to update image content
+      function updateImageContent(item, targetIndex) {
+        // Get image URL from multiple sources
+        let imgUrl = item.imgUrl;
+        
+        // If empty, try to get from material
+        if (!imgUrl && material) {
+          const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
+          const itemPath = hasItemsArray ? `${sectionId}.items.${targetIndex}` : sectionId;
+          const imgPath = `${itemPath}.images.main`;
+          imgUrl = getImageUrl(imgPath, material);
+        }
+        
+        console.log('[TIL] updateImageContent - targetIndex:', targetIndex, 'imgUrl:', imgUrl);
+        
+        const isVideo = item.isVideo || (imgUrl && isVideoUrl(imgUrl));
+        
+        if (isVideo && imgUrl) {
+          let video = imageWrapper.querySelector('video');
+          if (video) {
+            video.src = imgUrl;
+            video.style.display = '';
+          } else {
+            video = document.createElement('video');
+            video.src = imgUrl;
+            video.className = 'absolute inset-0 w-full h-full object-cover z-0';
+            video.setAttribute('autoplay', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('loop', '');
+            video.setAttribute('playsinline', '');
+            video.setAttribute('preload', 'metadata');
+            video.setAttribute('data-material-video', 'true');
+            imageWrapper.insertBefore(video, imageWrapper.firstChild);
+          }
+          imageWrapper.style.backgroundImage = '';
+          imageWrapper.style.backgroundSize = '';
+          imageWrapper.style.backgroundPosition = '';
+        } else {
+          const video = imageWrapper.querySelector('video');
+          if (video) video.style.display = 'none';
+          
+          // Set background image
+          if (imgUrl) {
+            imageWrapper.style.backgroundImage = `url(${imgUrl})`;
+          } else {
+            imageWrapper.style.backgroundImage = '';
+          }
+          
+          if (item.bgStyle) {
+            const bgSizeMatch = item.bgStyle.match(/background-size:\s*([^;]+)/);
+            const posMatch = item.bgStyle.match(/background-position:\s*([^;]+)/);
+            imageWrapper.style.backgroundSize = bgSizeMatch ? bgSizeMatch[1].trim() : 'cover';
+            imageWrapper.style.backgroundPosition = posMatch ? posMatch[1].trim() : 'center';
+          } else {
+            imageWrapper.style.backgroundSize = 'cover';
+            imageWrapper.style.backgroundPosition = 'center';
+          }
+        }
+      }
+      
+      // Helper function to check if URL is video
+      function isVideoUrl(url) {
+        if (!url || typeof url !== 'string') return false;
+        if (url.startsWith('data:video/')) return true;
+        const cleanUrl = url.split('?')[0].toLowerCase();
+        return /\.(mp4|webm|ogg|mov|m4v)$/.test(cleanUrl);
+      }
+      
+      // Helper function to get image URL from material
+      function getImageUrl(path, material) {
+        if (!path || !material) return '';
+        const parts = path.split('.');
+        let value = material;
+        for (const part of parts) {
+          if (value && typeof value === 'object') {
+            value = value[part];
+          } else {
+            return '';
+          }
+        }
+        return typeof value === 'string' ? value : '';
+      }
+      
+      // Helper function to update button states
+      function updateButtonStates(targetIndex, theme) {
+        switcherBtns.forEach((btn) => {
+          const idx = parseInt(btn.getAttribute('data-til-index'), 10);
+          const isActive = idx === targetIndex;
+          btn.classList.toggle('til-switcher-btn--active', isActive);
+          if (theme === 'dark') {
+            btn.classList.toggle('bg-white', isActive);
+            btn.classList.toggle('text-black', isActive);
+            btn.classList.toggle('border-white', isActive);
+            btn.classList.remove('bg-black', 'border-black');
+            btn.classList.toggle('bg-transparent', !isActive);
+            btn.classList.toggle('text-white', !isActive);
+            btn.classList.toggle('border-white/30', !isActive);
+          } else {
+            btn.classList.toggle('bg-black', isActive);
+            btn.classList.toggle('text-white', isActive);
+            btn.classList.toggle('border-black', isActive);
+            btn.classList.remove('bg-white', 'border-white');
+            btn.classList.toggle('bg-transparent', !isActive);
+            btn.classList.toggle('text-text-primaryLight', !isActive);
+            btn.classList.toggle('border-black/20', !isActive);
+          }
+        });
       }
 
       // Event listeners
