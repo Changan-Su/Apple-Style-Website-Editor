@@ -510,9 +510,12 @@ window.EditorSystem = (function() {
     const path = el.getAttribute('data-material');
     if (!path) return;
     
-    // Preserve HTML when element is citation-capable or already contains citations
+    // Use innerHTML for: citation-capable elements, elements with existing citations,
+    // detail text (to preserve line breaks and rich content), or any multi-line content.
     const canContainRefs = el.hasAttribute('data-ref-content') || !!el.querySelector('.ref-cite');
-    const newValue = canContainRefs ? el.innerHTML.trim() : el.textContent.trim();
+    const isDetailContent = el.hasAttribute('data-til-detail-text') || (path && path.endsWith('.detail'));
+    const useHtml = canContainRefs || isDetailContent;
+    const newValue = useHtml ? el.innerHTML.trim() : el.textContent.trim();
     
     if (window.ModeManager.captureSnapshot) {
       window.ModeManager.captureSnapshot();
@@ -527,7 +530,7 @@ window.EditorSystem = (function() {
     const allElements = document.querySelectorAll(`[data-material="${path}"]`);
     allElements.forEach(elem => {
       if (elem !== el) {
-        if (canContainRefs) {
+        if (useHtml) {
           elem.innerHTML = newValue;
         } else {
           elem.textContent = newValue;

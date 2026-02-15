@@ -855,11 +855,13 @@ window.SectionRenderer = (function() {
           descEl.textContent = freshItem.description || '';
           if (imageLabelEl) imageLabelEl.textContent = freshItem.imageLabel || '';
           
-          // Update data attributes
+          // Update data attributes (including detail elements)
           titleEl.setAttribute('data-material', `${itemPath}.title`);
           descEl.setAttribute('data-material', `${itemPath}.description`);
           if (imageLabelEl) imageLabelEl.setAttribute('data-material', `${itemPath}.imageLabel`);
           imageWrapper.setAttribute('data-material-img', `${itemPath}.images.main`);
+          if (detailTitleEl) detailTitleEl.setAttribute('data-material', `${itemPath}.title`);
+          if (detailTextEl) detailTextEl.setAttribute('data-material', `${itemPath}.detail`);
           
           // Update detail content
           if (detailTitleEl) detailTitleEl.textContent = freshItem.title || '';
@@ -948,6 +950,20 @@ window.SectionRenderer = (function() {
         if (imageLabelEl) {
           const currentLabel = imageLabelEl.textContent.trim();
           setNestedValue(material, `${pageKey}.${currentItemPath}.imageLabel`, currentLabel);
+        }
+
+        // Save detail title and text (use innerHTML to preserve line breaks and rich content)
+        if (detailTitleEl) {
+          const currentDetailTitle = detailTitleEl.textContent.trim();
+          if (currentDetailTitle) {
+            setNestedValue(material, `${pageKey}.${currentItemPath}.title`, currentDetailTitle);
+          }
+        }
+        if (detailTextEl) {
+          const currentDetail = detailTextEl.innerHTML.trim();
+          if (currentDetail && currentDetail !== 'Detail content goes here.') {
+            setNestedValue(material, `${pageKey}.${currentItemPath}.detail`, currentDetail);
+          }
         }
         
         // IMPORTANT: Save current image URL AND position/zoom from DOM

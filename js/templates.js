@@ -836,8 +836,9 @@ window.TemplateRegistry = (function() {
     const theme = sectionId === 'safety' || sectionId === 'innovation' ? 'dark' : 'light';
     
     // Extract headline and subheadline
-    const headline = data?.headline || '';
-    const subheadline = data?.subheadline || '';
+    // Backward-compatible fallback for legacy section data that only has title/description
+    const headline = data?.headline || data?.title || '';
+    const subheadline = data?.subheadline || data?.description || '';
 
     if (!items.length) {
       return `
@@ -991,8 +992,9 @@ window.TemplateRegistry = (function() {
     const theme = 'dark';
     
     // Extract headline and subheadline
-    const headline = data?.headline || '';
-    const subheadline = data?.subheadline || '';
+    // Backward-compatible fallback for legacy section data that only has title/description
+    const headline = data?.headline || data?.title || '';
+    const subheadline = data?.subheadline || data?.description || '';
 
     if (!items.length) {
       return `
