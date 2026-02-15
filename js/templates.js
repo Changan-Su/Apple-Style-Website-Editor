@@ -925,14 +925,16 @@ window.TemplateRegistry = (function() {
               <!-- Content Wrapper (slides as a whole) -->
               <div class="til-content-wrapper flex-1 relative overflow-hidden" data-til-content-wrapper>
                 <!-- Title/Description (shown when collapsed) -->
-                <div class="til-collapsed-content absolute inset-0 transition-all duration-400 flex flex-col justify-center"
+                <div class="til-collapsed-content absolute inset-0 transition-all duration-400 flex flex-col"
                      data-til-collapsed-content>
-                  <h2 class="til-title text-[64px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05] mb-6" 
-                      data-material="${materialPrefix}.title"
-                      data-til-title>${first.title || ''}</h2>
-                  <p class="til-description text-[24px] font-normal text-text-muted leading-[1.4] mb-8" 
-                     data-material="${materialPrefix}.description"
-                     data-til-description>${first.description || ''}</p>
+                  <div class="flex-1 flex flex-col justify-center overflow-y-auto">
+                    <h2 class="til-title text-[64px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05] mb-6" 
+                        data-material="${materialPrefix}.title"
+                        data-til-title>${first.title || ''}</h2>
+                    <p class="til-description text-[24px] font-normal text-text-muted leading-[1.4]" 
+                       data-material="${materialPrefix}.description"
+                       data-til-description>${first.description || ''}</p>
+                  </div>
                   <button class="til-learn-more-btn w-fit px-6 py-3 rounded-full ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-black/80'} font-medium transition-colors flex items-center gap-2"
                           data-til-learn-more
                           data-material="${materialPrefix}.cta">
@@ -983,68 +985,157 @@ window.TemplateRegistry = (function() {
     `;
   }
 
-  // Text + Image Right Template
+  // Text + Image Right Template (NO FLIP - same-face layout transition, mirror of Text Image Left)
   function textImageRightTemplate(sectionId, data, material) {
-    const imgUrl = getImageUrl(data.images?.main, material);
-    const detailEndImageUrl = getImageUrl(data.detailEndImage, material);
-    const imgPos = data.images?.position || {};
-    const bgPosX = imgPos.x ?? 50;
-    const bgPosY = imgPos.y ?? 50;
-    const bgScale = imgPos.scale ?? 100;
-    const bgStyle = imgUrl && !isVideoUrl(imgUrl) ? `background-image: url(${imgUrl}); background-size: ${bgScale}%; background-position: ${bgPosX}% ${bgPosY}%;` : '';
-    const videoLayer = renderVideoLayer(imgUrl);
+    const items = buildTextImageLeftItemsCompat(data);
+    const theme = 'dark';
     
-    const flipPath = `${sectionId}`;
-    const flipKey = `${sectionId}-section-card`;
-    const flipEnabled = data.flipEnabled === true;
-    const showDetailBanner = data.showDetailBanner !== false;
-    const frontHtml = `
-      <div class="w-full h-full flex items-center gap-[80px]">
-        <div class="flex-1 h-[600px] bg-white rounded-[32px] shadow-xl shadow-black/5 relative overflow-hidden fade-in-up bg-cover bg-center" style="${bgStyle}" data-material-img="${sectionId}.images.main">
-          ${videoLayer}
-          <div class="absolute inset-0 flex items-center justify-center text-black/20 text-3xl font-semibold" data-material="${sectionId}.imageLabel">${data.imageLabel || ''}</div>
-        </div>
-        <div class="w-[500px] flex flex-col gap-6 fade-in-up" style="transition-delay: 0.2s;">
-          <h2 class="text-[64px] font-semibold text-text-primaryLight leading-[1.05]" data-material="${sectionId}.title">${data.title || ''}</h2>
-          <p class="text-[24px] font-normal text-text-muted leading-[1.4]" data-material="${sectionId}.description">
-            ${data.description || ''}
-          </p>
-          ${flipEnabled ? `
-            <button class="flip-trigger w-fit px-6 py-3 rounded-full bg-black text-white font-medium hover:bg-black/80 transition-colors mt-2 flex items-center gap-2" data-flip-target="${flipKey}" data-material="${sectionId}.cta">
-              ${data.cta || 'Learn more'}
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          ` : ''}
-        </div>
-      </div>
-    `;
+    // Extract headline and subheadline
+    const headline = data?.headline || '';
+    const subheadline = data?.subheadline || '';
+
+    if (!items.length) {
+      return `
+        <section id="${sectionId}" class="w-full ${theme === 'dark' ? 'bg-black' : 'bg-surface-light text-text-primaryLight'} py-[120px]">
+          <div class="max-w-[1440px] mx-auto px-[120px] h-[600px] flex items-center justify-center text-text-muted">No content</div>
+        </section>
+      `;
+    }
+
+    const first = items[0];
+    const imgUrl0 = getImageUrl(first.images?.main, material);
+    const imgPos0 = first.imagesPosition || first.images?.position || {};
+    const bgPosX0 = imgPos0.x ?? 50;
+    const bgPosY0 = imgPos0.y ?? 50;
+    const bgScale0 = imgPos0.scale ?? 100;
+    const bgStyle0 = imgUrl0 && !isVideoUrl(imgUrl0) ? `background-image: url(${imgUrl0}); background-size: ${bgScale0}%; background-position: ${bgPosX0}% ${bgPosY0}%;` : '';
+    const videoLayer0 = renderVideoLayer(imgUrl0);
+
+    // Determine material path prefix (items vs direct)
+    const hasItemsArray = Array.isArray(data?.items) && data.items.length > 0;
+    const materialPrefix = hasItemsArray ? `${sectionId}.items.0` : sectionId;
+
+    // Prepare items data for switcher
+    const itemsForSwitcher = items.map(function(item, i) {
+      const imgUrl = getImageUrl(item.images?.main, material);
+      const pos = item.imagesPosition || item.images?.position || {};
+      const bgStyle = imgUrl && !isVideoUrl(imgUrl) ? `background-image: url(${imgUrl}); background-size: ${pos.scale ?? 100}%; background-position: ${pos.x ?? 50}% ${pos.y ?? 50}%;` : '';
+      return {
+        title: item.title || '',
+        description: item.description || '',
+        imageLabel: item.imageLabel || '',
+        detail: item.detail || '',
+        detailBlocks: item.detailBlocks || [],
+        imgUrl: imgUrl,
+        bgStyle: bgStyle,
+        isVideo: isVideoUrl(imgUrl),
+        detailImageShrinkRatio: typeof item.detailImageShrinkRatio === 'number' ? item.detailImageShrinkRatio : 60
+      };
+    });
+    const itemsForSwitcherJson = JSON.stringify(itemsForSwitcher).replace(/"/g, '&quot;');
+
+    // Section switcher buttons (only show if multiple items)
+    const switcherButtons = items.length > 1 ? items.map(function(item, i) {
+      const active = i === 0;
+      const btnClass = theme === 'dark'
+        ? (active ? 'til-switcher-btn til-switcher-btn--active bg-white text-black border-white' : 'til-switcher-btn bg-transparent text-white border-white/30 hover:border-white/60')
+        : (active ? 'til-switcher-btn til-switcher-btn--active bg-black text-white border-black' : 'til-switcher-btn bg-transparent text-text-primaryLight border-black/20 hover:border-black/40');
+      return `<div class="relative" data-collection-item="true" data-collection-type="text-image-right" data-collection-path="${sectionId}.items" data-item-index="${i}"><button type="button" class="${btnClass} px-5 py-2.5 rounded-full text-sm font-medium transition-all border" data-til-index="${i}" data-til-section-id="${sectionId}">${item.tab || item.title || 'Section ' + (i + 1)}</button></div>`;
+    }).join('') : '';
 
     return `
-      <section id="${sectionId}" class="w-full bg-surface-light py-[120px] text-text-primaryLight">
-        <div class="max-w-[1440px] mx-auto px-[120px] h-[600px]">
-          ${renderFlipWrapper({
-            flipKey,
-            flipPath,
-            flipEnabled,
-            flipDirection: data.flipDirection,
-            showBanner: showDetailBanner,
-            wrapperClass: 'h-full rounded-[32px]',
-            frontHtml,
-            title: data.title || '',
-            titlePath: `${sectionId}.title`,
-            detail: data.detail || '',
-            detailPath: `${sectionId}.detail`,
-            detailBlocks: data.detailBlocks,
-            detailBlocksPath: `${sectionId}.detailBlocks`,
-            bannerImageUrl: imgUrl,
-            bannerImagePath: `${sectionId}.images.main`,
-            detailBannerPath: `${sectionId}.showDetailBanner`,
-            detailEndImageUrl,
-            detailEndImagePath: `${sectionId}.detailEndImage`,
-            frontShellClass: 'h-full rounded-[32px] overflow-hidden',
-            backShellClass: 'h-full rounded-[32px] overflow-hidden bg-white',
-            backPanelClass: 'w-full h-full p-[60px] flex flex-col justify-center gap-6 overflow-y-auto'
-          })}
+      <section id="${sectionId}" class="w-full ${theme === 'dark' ? 'bg-black' : 'bg-surface-light text-text-primaryLight'} py-[120px]" data-section-id="${sectionId}" data-template="text-image-right">
+        <div class="max-w-[1440px] mx-auto px-[120px]">
+          
+          <!-- Section Headline (if provided, independent and full-width) -->
+          ${headline ? `
+          <div class="til-headline-wrapper text-center mb-16" data-til-headline-wrapper>
+            <h2 class="til-headline text-[56px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05] mb-4"
+                data-material="${sectionId}.headline">${headline}</h2>
+            ${subheadline ? `<p class="til-subheadline text-[21px] ${theme === 'dark' ? 'text-text-muted' : 'text-text-primaryLight/70'} leading-[1.4] max-w-[980px] mx-auto"
+                data-material="${sectionId}.subheadline">${subheadline}</p>` : ''}
+          </div>
+          ` : ''}
+          
+          <!-- Main Content Container -->
+          <div class="til-container w-full h-[600px] relative"
+               data-til-section-id="${sectionId}"
+               data-til-active-index="0"
+               data-til-detail-state="collapsed"
+               data-til-layout="mirrored"
+               data-til-theme="${theme}"
+               data-til-has-items="${hasItemsArray ? 'true' : 'false'}"
+               data-til-items="${itemsForSwitcherJson}">
+            
+            <!-- Left Content Area (mirrored to right) -->
+            <div class="til-left-area absolute right-0 top-0 w-[500px] h-full flex flex-col transition-all duration-500"
+                 data-til-left-area>
+              
+              <!-- Section Switcher (fixed at top) -->
+              <div class="til-switcher-container mb-8 transition-opacity duration-300" data-til-switcher-container>
+                <div class="til-switcher flex flex-wrap gap-2 items-center" data-til-switcher data-collection-container="true" data-collection-type="text-image-right" data-collection-path="${sectionId}.items">
+                  ${switcherButtons}
+                </div>
+              </div>
+              
+              <!-- Content Wrapper (slides as a whole) -->
+              <div class="til-content-wrapper flex-1 relative overflow-hidden" data-til-content-wrapper>
+                <!-- Title/Description (shown when collapsed) -->
+                <div class="til-collapsed-content absolute inset-0 transition-all duration-400 flex flex-col"
+                     data-til-collapsed-content>
+                  <div class="flex-1 flex flex-col justify-center overflow-y-auto">
+                    <h2 class="til-title text-[64px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-[1.05] mb-6" 
+                        data-material="${materialPrefix}.title"
+                        data-til-title>${first.title || ''}</h2>
+                    <p class="til-description text-[24px] font-normal text-text-muted leading-[1.4]" 
+                       data-material="${materialPrefix}.description"
+                       data-til-description>${first.description || ''}</p>
+                  </div>
+                  <button class="til-learn-more-btn w-fit px-6 py-3 rounded-full ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-black/80'} font-medium transition-colors flex items-center gap-2"
+                          data-til-learn-more
+                          data-material="${materialPrefix}.cta">
+                    ${first.cta || 'Learn more'}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+                
+                <!-- Detail Content (shown when expanded) -->
+                <div class="til-detail-content absolute inset-0 opacity-0 pointer-events-none transition-all duration-400 flex flex-col overflow-hidden"
+                     data-til-detail-content>
+                  <div class="flex flex-col gap-6 h-full">
+                    <div class="flex items-start justify-between">
+                      <h3 class="text-[40px] font-semibold ${theme === 'dark' ? 'text-white' : 'text-text-primaryLight'} leading-tight"
+                          data-til-detail-title>${first.title || ''}</h3>
+                      <button class="til-close-btn w-10 h-10 rounded-full ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-black/10 hover:bg-black/20'} transition-colors flex items-center justify-center flex-shrink-0 ml-4"
+                              data-til-close>
+                        <svg class="w-5 h-5 ${theme === 'dark' ? 'text-white' : 'text-black'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    <div class="w-16 h-[2px] ${theme === 'dark' ? 'bg-accent-blue' : 'bg-black'} flex-shrink-0"></div>
+                    <div class="til-detail-text text-[17px] ${theme === 'dark' ? 'text-white/80' : 'text-text-primaryLight/80'} font-normal leading-relaxed latex-content overflow-y-auto pr-2 flex-1"
+                         data-til-detail-text
+                         data-material="${materialPrefix}.detail">${first.detail || 'Detail content goes here.'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Image Area Wrapper (mirrored to left) -->
+            <div class="til-right-wrapper absolute left-0 top-0 h-full transition-all duration-500 overflow-hidden"
+                 style="width: calc(100% - 500px - 60px);"
+                 data-til-right-wrapper>
+              <div class="til-right-area w-full h-full relative" data-til-right-area>
+                <div class="til-image-wrapper w-full h-full ${theme === 'dark' ? 'bg-surface-dark' : 'bg-white shadow-xl shadow-black/5'} rounded-[32px] relative overflow-hidden bg-cover bg-center transition-all duration-500" 
+                     style="${bgStyle0}"
+                     data-material-img="${materialPrefix}.images.main"
+                     data-til-image-wrapper>
+                  ${videoLayer0}
+                  <div class="absolute inset-0 flex items-center justify-center ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} text-3xl font-semibold til-image-label" 
+                       data-material="${materialPrefix}.imageLabel">${first.imageLabel || ''}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     `;
@@ -1191,7 +1282,10 @@ window.TemplateRegistry = (function() {
         <div class="id-detail-panel ${isFirst ? 'id-detail-panel--active' : ''} bg-surface-dark rounded-[32px]"
              data-id-detail="${i}"
              data-panel-index="${i}">
-          <div class="w-full h-full p-[60px] overflow-y-auto flex flex-col gap-6">
+          <div class="w-full h-full p-[60px] flex flex-col gap-6">
+            <h3 class="text-[40px] font-semibold text-white leading-tight flex-shrink-0"
+                data-material="${sectionId}.items.${i}.title">${item.title || ''}</h3>
+            <div class="w-16 h-[2px] bg-accent-blue flex-shrink-0"></div>
             <div class="detail-rich-text text-[19px] text-white/80 font-normal leading-[1.6] latex-content flex-1 min-h-0 overflow-y-auto pr-2"
                  data-material="${sectionId}.items.${i}.detail">
               ${detailContent}

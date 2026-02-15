@@ -523,6 +523,18 @@ window.EditorSystem = (function() {
     updateMaterialByPath(material, `index.${path}`, newValue);
     window.ModeManager.updateMaterialInMemory(material);
     
+    // Sync all elements with the same data-material path
+    const allElements = document.querySelectorAll(`[data-material="${path}"]`);
+    allElements.forEach(elem => {
+      if (elem !== el) {
+        if (canContainRefs) {
+          elem.innerHTML = newValue;
+        } else {
+          elem.textContent = newValue;
+        }
+      }
+    });
+    
     // If online, patch to server
     const state = window.ModeManager.getState();
     if (state.dataMode === 'online') {
@@ -775,6 +787,12 @@ window.EditorSystem = (function() {
       addLabel: 'Add Section',
       minItems: 1
     },
+    'text-image-right': {
+      collectionType: 'text-image-right',
+      path: 'items',
+      addLabel: 'Add Section',
+      minItems: 1
+    },
     'accordion': {
       collectionType: 'accordion',
       path: 'closerLook.features',
@@ -936,7 +954,7 @@ window.EditorSystem = (function() {
       };
     }
 
-    if (template === 'text-image-left') {
+    if (template === 'text-image-left' || template === 'text-image-right') {
       return {
         tab: `Section ${nextIndex}`,
         title: `New Section ${nextIndex}`,
@@ -1707,6 +1725,11 @@ window.EditorSystem = (function() {
   }
 
   async function saveAll() {
+    // Flush any pending edits (e.g. TIL image position) from DOM into material before saving
+    if (window.SectionRenderer && window.SectionRenderer.flushPendingEdits) {
+      window.SectionRenderer.flushPendingEdits();
+    }
+    
     const state = window.ModeManager.getState();
     const material = window.ModeManager.getMaterial();
     

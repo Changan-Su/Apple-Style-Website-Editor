@@ -9,6 +9,7 @@ window.SectionRenderer = (function() {
   let pageKey = 'index';
   let container = null;
   let citationClickBound = false;
+  const _flushCallbacks = [];
 
   function init(materialData, page = 'index', containerEl = null) {
     material = materialData;
@@ -24,6 +25,9 @@ window.SectionRenderer = (function() {
   }
 
   function render() {
+    // Clear flush callbacks from previous render cycle
+    _flushCallbacks.length = 0;
+
     if (!material || !material.config || !material.config.sections) {
       console.warn('No section configuration found in material');
       renderFallback();
@@ -353,6 +357,14 @@ window.SectionRenderer = (function() {
             // Update active panel immediately
             currentPanel.classList.remove('id-detail-panel--active');
             targetPanel.classList.add('id-detail-panel--active');
+            
+            // Sync title from left to right panel
+            const leftTitle = item.querySelector('h3');
+            const rightTitle = targetPanel.querySelector('h3[data-material]');
+            if (leftTitle && rightTitle) {
+              rightTitle.textContent = leftTitle.textContent;
+            }
+            
             currentIndex = targetIndex;
 
             // Wait for rotation to complete
@@ -375,6 +387,13 @@ window.SectionRenderer = (function() {
               currentPanel.classList.remove('id-detail-panel--flip-out');
 
               targetPanel.classList.add('id-detail-panel--flip-in');
+              
+              // Sync title from left to right panel
+              const leftTitle = item.querySelector('h3');
+              const rightTitle = targetPanel.querySelector('h3[data-material]');
+              if (leftTitle && rightTitle) {
+                rightTitle.textContent = leftTitle.textContent;
+              }
 
               const onFlipInEnd = () => {
                 targetPanel.removeEventListener('animationend', onFlipInEnd);
@@ -495,6 +514,7 @@ window.SectionRenderer = (function() {
       const sectionId = container.getAttribute('data-til-section-id');
       const itemsJson = container.getAttribute('data-til-items');
       const theme = container.getAttribute('data-til-theme') || 'light';
+      const isMirroredLayout = container.getAttribute('data-til-layout') === 'mirrored';
       
       console.log('[TIL] Initializing section:', sectionId, 'theme:', theme);
       
@@ -574,9 +594,15 @@ window.SectionRenderer = (function() {
         collapsedContent.style.opacity = '0';
         collapsedContent.style.pointerEvents = 'none';
 
-        // Shrink and reposition right image area
+        // Shrink and reposition image area
         rightWrapper.style.width = `${shrinkRatio}%`;
-        rightWrapper.style.right = '0';
+        if (isMirroredLayout) {
+          rightWrapper.style.left = '0';
+          rightWrapper.style.right = 'auto';
+        } else {
+          rightWrapper.style.right = '0';
+          rightWrapper.style.left = 'auto';
+        }
         
         // Dynamically adjust left area width: totalWidth - rightWrapperWidth - gap(60px)
         const containerWidth = container.offsetWidth;
@@ -732,8 +758,15 @@ window.SectionRenderer = (function() {
         detailContent.style.opacity = '0';
         detailContent.style.pointerEvents = 'none';
 
-        // Expand right image area back
+        // Expand image area back
         rightWrapper.style.width = 'calc(100% - 500px - 60px)';
+        if (isMirroredLayout) {
+          rightWrapper.style.left = '0';
+          rightWrapper.style.right = 'auto';
+        } else {
+          rightWrapper.style.right = '0';
+          rightWrapper.style.left = 'auto';
+        }
         
         // Restore left area width to fixed 500px
         leftArea.style.width = '500px';
@@ -750,16 +783,15 @@ window.SectionRenderer = (function() {
           }, 300);
         }
         
-        // Restore background image style
-        if (currentItem.bgStyle) {
-          const bgSizeMatch = currentItem.bgStyle.match(/background-size:\s*([^;]+)/);
-          const posMatch = currentItem.bgStyle.match(/background-position:\s*([^;]+)/);
-          const imgMatch = currentItem.bgStyle.match(/background-image:\s*url\(([^)]+)\)/);
-          
-          if (imgMatch) imageWrapper.style.backgroundImage = `url(${imgMatch[1]})`;
-          imageWrapper.style.backgroundSize = bgSizeMatch ? bgSizeMatch[1].trim() : 'cover';
-          imageWrapper.style.backgroundPosition = posMatch ? posMatch[1].trim() : 'center';
-        }
+        // Switch state first so image renderer uses collapsed position profile.
+        detailState = 'collapsed';
+        container.setAttribute('data-til-detail-state', 'collapsed');
+
+        // Restore image based on latest material data (not stale initial item cache)
+        const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
+        const itemPath = hasItemsArray ? `${sectionId}.items.${currentIndex}` : sectionId;
+        const liveItem = getNestedValue(material, `${pageKey}.${itemPath}`) || currentItem;
+        updateImageContent(liveItem, currentIndex);
         
         // Show image label
         if (imageLabelEl) {
@@ -770,8 +802,6 @@ window.SectionRenderer = (function() {
         setTimeout(() => {
           collapsedContent.style.opacity = '1';
           collapsedContent.style.pointerEvents = 'auto';
-          detailState = 'collapsed';
-          container.setAttribute('data-til-detail-state', 'collapsed');
           isAnimating = false;
         }, 300);
       }
@@ -782,8 +812,11 @@ window.SectionRenderer = (function() {
         if (targetIndex < 0 || targetIndex >= items.length) return;
         isAnimating = true;
 
+        // IMPORTANT: Save current index data before switching
+        saveCurrentTILData();
+
         const item = items[targetIndex];
-        const theme = sectionId === 'safety' || sectionId === 'innovation' ? 'dark' : 'light';
+        const activeTheme = container.getAttribute('data-til-theme') || theme;
         
         // Determine slide direction based on index relationship
         const slideDirection = targetIndex > currentIndex ? 'left' : 'right';
@@ -803,34 +836,46 @@ window.SectionRenderer = (function() {
         
         // Phase 2: Update content while off-screen
         setTimeout(() => {
-          // Update text content
-          titleEl.textContent = item.title || '';
-          descEl.textContent = item.description || '';
-          if (imageLabelEl) imageLabelEl.textContent = item.imageLabel || '';
-          
-          // Update data attributes
+          // Reload fresh data from material (in case it was edited)
+          const freshMaterial = getMaterial();
           const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
           const itemPath = hasItemsArray ? `${sectionId}.items.${targetIndex}` : sectionId;
+          
+          // Get fresh item data from material
+          let freshItem = item;
+          if (hasItemsArray && freshMaterial && freshMaterial[pageKey] && freshMaterial[pageKey][sectionId]) {
+            const itemsData = freshMaterial[pageKey][sectionId].items;
+            if (itemsData && itemsData[targetIndex]) {
+              freshItem = itemsData[targetIndex];
+            }
+          }
+          
+          // Update text content with fresh data
+          titleEl.textContent = freshItem.title || '';
+          descEl.textContent = freshItem.description || '';
+          if (imageLabelEl) imageLabelEl.textContent = freshItem.imageLabel || '';
+          
+          // Update data attributes
           titleEl.setAttribute('data-material', `${itemPath}.title`);
           descEl.setAttribute('data-material', `${itemPath}.description`);
           if (imageLabelEl) imageLabelEl.setAttribute('data-material', `${itemPath}.imageLabel`);
           imageWrapper.setAttribute('data-material-img', `${itemPath}.images.main`);
           
           // Update detail content
-          if (detailTitleEl) detailTitleEl.textContent = item.title || '';
+          if (detailTitleEl) detailTitleEl.textContent = freshItem.title || '';
           if (detailTextEl) {
-            const detailHtml = Array.isArray(item.detailBlocks) && item.detailBlocks.length > 0
-              ? window.TemplateRegistry.render('detailBlocks', sectionId, { detailBlocks: item.detailBlocks }, material)
-              : (item.detail || 'Detail content goes here.');
+            const detailHtml = Array.isArray(freshItem.detailBlocks) && freshItem.detailBlocks.length > 0
+              ? window.TemplateRegistry.render('detailBlocks', sectionId, { detailBlocks: freshItem.detailBlocks }, material)
+              : (freshItem.detail || 'Detail content goes here.');
             detailTextEl.innerHTML = detailHtml;
           }
           
-          // Update image content
-          updateImageContent(item, targetIndex);
+          // Update image content with fresh data
+          updateImageContent(freshItem, targetIndex);
           
           // Update button states
           container.setAttribute('data-til-active-index', String(targetIndex));
-          updateButtonStates(targetIndex, theme);
+          updateButtonStates(targetIndex, activeTheme);
           
           // Position content for slide in from opposite side
           activeContent.style.transition = 'none';
@@ -875,22 +920,138 @@ window.SectionRenderer = (function() {
         }, 450);
       }
       
-      // Helper function to update image content
-      function updateImageContent(item, targetIndex) {
-        // Get image URL from multiple sources
-        let imgUrl = item.imgUrl;
+      // Helper function to save current TIL data before switching
+      function saveCurrentTILData() {
+        if (!material) return;
         
-        // If empty, try to get from material
-        if (!imgUrl && material) {
-          const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
-          const itemPath = hasItemsArray ? `${sectionId}.items.${targetIndex}` : sectionId;
-          const imgPath = `${itemPath}.images.main`;
-          imgUrl = getImageUrl(imgPath, material);
+        // Capture snapshot for undo
+        if (window.ModeManager && window.ModeManager.captureSnapshot) {
+          window.ModeManager.captureSnapshot();
         }
         
-        console.log('[TIL] updateImageContent - targetIndex:', targetIndex, 'imgUrl:', imgUrl);
+        const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
+        const currentItemPath = hasItemsArray ? `${sectionId}.items.${currentIndex}` : sectionId;
         
-        const isVideo = item.isVideo || (imgUrl && isVideoUrl(imgUrl));
+        // Save title
+        const currentTitle = titleEl.textContent.trim();
+        if (currentTitle) {
+          setNestedValue(material, `${pageKey}.${currentItemPath}.title`, currentTitle);
+        }
+        
+        // Save description
+        const currentDesc = descEl.textContent.trim();
+        if (currentDesc) {
+          setNestedValue(material, `${pageKey}.${currentItemPath}.description`, currentDesc);
+        }
+        
+        // Save imageLabel if exists
+        if (imageLabelEl) {
+          const currentLabel = imageLabelEl.textContent.trim();
+          setNestedValue(material, `${pageKey}.${currentItemPath}.imageLabel`, currentLabel);
+        }
+        
+        // IMPORTANT: Save current image URL AND position/zoom from DOM
+        const bgImage = imageWrapper.style.backgroundImage;
+        const videoEl = imageWrapper.querySelector('video[data-material-video="true"]');
+        
+        if (videoEl && videoEl.src) {
+          setNestedValue(material, `${pageKey}.${currentItemPath}.images.main`, videoEl.src);
+          setNestedValue(material, `${pageKey}.${currentItemPath}.isVideo`, true);
+        } else if (bgImage && bgImage !== 'none') {
+          const match = bgImage.match(/url\(['"]?([^'"]+)['"]?\)/);
+          if (match && match[1]) {
+            setNestedValue(material, `${pageKey}.${currentItemPath}.images.main`, match[1]);
+            setNestedValue(material, `${pageKey}.${currentItemPath}.isVideo`, false);
+          }
+        }
+
+        // Save current image position/zoom state from DOM
+        const naturalImg = imageWrapper.querySelector('.til-detail-natural-img');
+        if (detailState === 'expanded' && naturalImg) {
+          // Detail mode: read from natural image data attributes
+          const posDetail = {
+            x: Number(naturalImg.getAttribute('data-pos-x') || 50),
+            y: Number(naturalImg.getAttribute('data-pos-y') || 50),
+            scale: Number(naturalImg.getAttribute('data-pos-scale') || 100)
+          };
+          setNestedValue(material, `${pageKey}.${currentItemPath}.images.positionDetail`, posDetail);
+          console.log('[TIL] Saved detail position:', posDetail);
+        } else {
+          // Collapsed mode: read from background styles
+          const bgPos = imageWrapper.style.backgroundPosition || '';
+          const bgSize = imageWrapper.style.backgroundSize || '';
+          const posParts = bgPos.split(/\s+/);
+          const posCollapsed = {};
+          if (posParts[0]) posCollapsed.x = parseFloat(posParts[0]);
+          if (posParts[1]) posCollapsed.y = parseFloat(posParts[1]);
+          if (bgSize && bgSize !== 'cover' && bgSize !== 'contain') {
+            posCollapsed.scale = parseFloat(bgSize);
+          }
+          if (Number.isFinite(posCollapsed.x) || Number.isFinite(posCollapsed.y) || Number.isFinite(posCollapsed.scale)) {
+            setNestedValue(material, `${pageKey}.${currentItemPath}.images.positionCollapsed`, posCollapsed);
+            console.log('[TIL] Saved collapsed position:', posCollapsed);
+          }
+        }
+        
+        // Update material in memory
+        if (window.ModeManager) {
+          window.ModeManager.updateMaterialInMemory(material);
+          
+          // If online mode, patch to server
+          const state = window.ModeManager.getState();
+          if (state && state.dataMode === 'online') {
+            const itemData = getNestedValue(material, `${pageKey}.${currentItemPath}`);
+            window.ModeManager.patchMaterial(`${pageKey}.${currentItemPath}`, itemData);
+          }
+        }
+        
+        console.log('[TIL] Saved current data for index:', currentIndex, 'path:', currentItemPath);
+      }
+
+      // Register this section's flush callback so saveAll can trigger it
+      _flushCallbacks.push(saveCurrentTILData);
+      
+      // Helper function to update image content
+      function updateImageContent(item, targetIndex) {
+        const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
+        const itemPath = hasItemsArray ? `${sectionId}.items.${targetIndex}` : sectionId;
+
+        // Always prioritize canonical material path `images.main`.
+        let imgUrl = '';
+        if (material) {
+          imgUrl = getImageUrl(`${itemPath}.images.main`, material);
+        }
+
+        // Backward-compatible fallbacks for legacy data.
+        if (!imgUrl && material) {
+          imgUrl = getImageUrl(`${itemPath}.imgUrl`, material);
+        }
+        if (!imgUrl) {
+          imgUrl = item?.images?.main || item?.imgUrl || '';
+        }
+
+        // Read saved transform profiles:
+        // - collapsed: images.positionCollapsed (fallback images.position)
+        // - detail:    images.positionDetail (fallback images.position)
+        const collapsedPos = material
+          ? (getNestedValue(material, `${pageKey}.${itemPath}.images.positionCollapsed`)
+            || getNestedValue(material, `${pageKey}.${itemPath}.images.position`)
+            || null)
+          : null;
+        const detailPos = material
+          ? (getNestedValue(material, `${pageKey}.${itemPath}.images.positionDetail`)
+            || getNestedValue(material, `${pageKey}.${itemPath}.images.position`)
+            || null)
+          : null;
+
+        // Read saved image transform (x/y/scale) from canonical material path.
+        
+        console.log('[TIL] updateImageContent - targetIndex:', targetIndex, 'imgUrl:', imgUrl,
+          'collapsedPos:', JSON.stringify(collapsedPos), 'detailPos:', JSON.stringify(detailPos),
+          'detailState:', detailState);
+        
+        const savedIsVideo = material ? getNestedValue(material, `${pageKey}.${itemPath}.isVideo`) : undefined;
+        const isVideo = (typeof savedIsVideo === 'boolean' ? savedIsVideo : item.isVideo) || (imgUrl && isVideoUrl(imgUrl));
         
         if (isVideo && imgUrl) {
           let video = imageWrapper.querySelector('video');
@@ -913,6 +1074,36 @@ window.SectionRenderer = (function() {
           imageWrapper.style.backgroundSize = '';
           imageWrapper.style.backgroundPosition = '';
         } else {
+          // Detail mode: keep natural image and switch to target image immediately.
+          if (detailState === 'expanded' && imgUrl) {
+            const existingVideo = imageWrapper.querySelector('video');
+            if (existingVideo) existingVideo.style.display = 'none';
+
+            imageWrapper.style.backgroundImage = '';
+            imageWrapper.style.backgroundSize = '';
+            imageWrapper.style.backgroundPosition = '';
+
+            let naturalImg = imageWrapper.querySelector('.til-detail-natural-img');
+            if (!naturalImg) {
+              naturalImg = document.createElement('img');
+              naturalImg.className = 'til-detail-natural-img';
+              naturalImg.setAttribute('data-til-detail-img', 'true');
+              imageWrapper.appendChild(naturalImg);
+            }
+            naturalImg.src = imgUrl;
+            naturalImg.style.opacity = '1';
+
+            const dx = Number.isFinite(Number(detailPos?.x)) ? Number(detailPos.x) : 50;
+            const dy = Number.isFinite(Number(detailPos?.y)) ? Number(detailPos.y) : 50;
+            const ds = Number.isFinite(Number(detailPos?.scale)) ? Number(detailPos.scale) : 100;
+            naturalImg.setAttribute('data-pos-x', String(dx));
+            naturalImg.setAttribute('data-pos-y', String(dy));
+            naturalImg.setAttribute('data-pos-scale', String(ds));
+            naturalImg.style.objectPosition = `${dx}% ${dy}%`;
+            naturalImg.style.transform = `translate(-50%, -50%) scale(${ds / 100})`;
+            return;
+          }
+
           const video = imageWrapper.querySelector('video');
           if (video) video.style.display = 'none';
           
@@ -920,21 +1111,33 @@ window.SectionRenderer = (function() {
           if (imgUrl) {
             imageWrapper.style.backgroundImage = `url(${imgUrl})`;
             // Update data-material-img attribute for expandDetail to use
-            const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
             const materialPath = hasItemsArray ? `${sectionId}.items.${targetIndex}.images.main` : `${sectionId}.images.main`;
             imageWrapper.setAttribute('data-material-img', materialPath);
           } else {
             imageWrapper.style.backgroundImage = '';
           }
-          
-          if (item.bgStyle) {
+
+          // Collapsed mode priority: saved collapsed position > legacy bgStyle > default.
+          const cx = Number.isFinite(Number(collapsedPos?.x)) ? Number(collapsedPos.x) : null;
+          const cy = Number.isFinite(Number(collapsedPos?.y)) ? Number(collapsedPos.y) : null;
+          const cs = Number.isFinite(Number(collapsedPos?.scale)) ? Number(collapsedPos.scale) : null;
+          console.log('[TIL] Applying collapsed pos - cx:', cx, 'cy:', cy, 'cs:', cs, 
+            'raw collapsedPos:', collapsedPos, 
+            'materialPath:', `${pageKey}.${itemPath}.images.positionCollapsed`);
+          if (cx !== null || cy !== null || cs !== null) {
+            imageWrapper.style.backgroundSize = cs !== null ? `${cs}%` : 'cover';
+            imageWrapper.style.backgroundPosition = `${cx ?? 50}% ${cy ?? 50}%`;
+            console.log('[TIL] Applied saved position:', imageWrapper.style.backgroundSize, imageWrapper.style.backgroundPosition);
+          } else if (item.bgStyle) {
             const bgSizeMatch = item.bgStyle.match(/background-size:\s*([^;]+)/);
             const posMatch = item.bgStyle.match(/background-position:\s*([^;]+)/);
             imageWrapper.style.backgroundSize = bgSizeMatch ? bgSizeMatch[1].trim() : 'cover';
             imageWrapper.style.backgroundPosition = posMatch ? posMatch[1].trim() : 'center';
+            console.log('[TIL] Applied bgStyle fallback:', imageWrapper.style.backgroundSize, imageWrapper.style.backgroundPosition);
           } else {
             imageWrapper.style.backgroundSize = 'cover';
             imageWrapper.style.backgroundPosition = 'center';
+            console.log('[TIL] Applied default: cover center');
           }
         }
       }
@@ -1202,10 +1405,13 @@ window.SectionRenderer = (function() {
       const pathParts = materialPath.split('.');
       // Replace last segment with "position"
       const posPath = [...pathParts.slice(0, -1), 'position'].join('.');
+      const effectivePosPath = resolveImagePositionPath(posPath, imgEl);
 
       // Get current values from material
       const mat = material;
-      const posData = getNestedValue(mat, `${pageKey}.${posPath}`) || {};
+      const posData = getNestedValue(mat, `${pageKey}.${effectivePosPath}`)
+        || getNestedValue(mat, `${pageKey}.${posPath}`)
+        || {};
       const currentX = posData.x ?? 50;
       const currentY = posData.y ?? 50;
       const currentScale = posData.scale ?? 100;
@@ -1235,11 +1441,13 @@ window.SectionRenderer = (function() {
         input.addEventListener('input', () => {
           const val = parseInt(input.value);
           applyImagePosition(imgEl, prop, val);
+          // Cache immediately so quick switch won't lose latest slider value.
+          cacheImagePosition(posPath, prop, val, imgEl);
         });
 
         input.addEventListener('change', () => {
           const val = parseInt(input.value);
-          saveImagePosition(posPath, prop, val);
+          saveImagePosition(posPath, prop, val, imgEl);
         });
       });
 
@@ -1251,9 +1459,9 @@ window.SectionRenderer = (function() {
         applyImagePosition(imgEl, 'x', 50);
         applyImagePosition(imgEl, 'y', 50);
         applyImagePosition(imgEl, 'scale', 100);
-        saveImagePosition(posPath, 'x', 50);
-        saveImagePosition(posPath, 'y', 50);
-        saveImagePosition(posPath, 'scale', 100);
+        saveImagePosition(posPath, 'x', 50, imgEl);
+        saveImagePosition(posPath, 'y', 50, imgEl);
+        saveImagePosition(posPath, 'scale', 100, imgEl);
       });
 
       imgEl.appendChild(controls);
@@ -1261,6 +1469,28 @@ window.SectionRenderer = (function() {
   }
 
   function applyImagePosition(el, prop, value) {
+    const tilContainer = el.closest('.til-container');
+    const inTILDetail = !!tilContainer && tilContainer.getAttribute('data-til-detail-state') === 'expanded';
+    const naturalImg = el.querySelector('.til-detail-natural-img');
+
+    // In TIL detail mode, apply transform to natural image instead of background.
+    if (inTILDetail && naturalImg) {
+      const currentX = Number(naturalImg.getAttribute('data-pos-x') || 50);
+      const currentY = Number(naturalImg.getAttribute('data-pos-y') || 50);
+      const currentScale = Number(naturalImg.getAttribute('data-pos-scale') || 100);
+
+      const x = prop === 'x' ? value : currentX;
+      const y = prop === 'y' ? value : currentY;
+      const scale = prop === 'scale' ? value : currentScale;
+
+      naturalImg.setAttribute('data-pos-x', String(x));
+      naturalImg.setAttribute('data-pos-y', String(y));
+      naturalImg.setAttribute('data-pos-scale', String(scale));
+      naturalImg.style.objectPosition = `${x}% ${y}%`;
+      naturalImg.style.transform = `translate(-50%, -50%) scale(${scale / 100})`;
+      return;
+    }
+
     if (prop === 'x') {
       const current = el.style.backgroundPosition || '50% 50%';
       const parts = current.split(' ');
@@ -1274,15 +1504,39 @@ window.SectionRenderer = (function() {
     }
   }
 
-  function saveImagePosition(posPath, prop, value) {
+  function resolveImagePositionPath(posPath, imgEl) {
+    const tilContainer = imgEl?.closest?.('.til-container');
+    if (!tilContainer) return posPath;
+    const inDetail = tilContainer.getAttribute('data-til-detail-state') === 'expanded';
+    if (!posPath.endsWith('.position')) return posPath;
+    return inDetail
+      ? posPath.replace(/\.position$/, '.positionDetail')
+      : posPath.replace(/\.position$/, '.positionCollapsed');
+  }
+
+  function cacheImagePosition(posPath, prop, value, imgEl) {
+    if (!material) return;
+    const effectivePosPath = resolveImagePositionPath(posPath, imgEl);
+    const fullPath = `${pageKey}.${effectivePosPath}`;
+    const fallbackPath = `${pageKey}.${posPath}`;
+    const posObj = getNestedValue(material, fullPath) || getNestedValue(material, fallbackPath) || {};
+    setNestedValue(material, fullPath, { ...posObj, [prop]: value });
+    if (window.ModeManager) {
+      window.ModeManager.updateMaterialInMemory(material);
+    }
+  }
+
+  function saveImagePosition(posPath, prop, value, imgEl) {
     if (!material) return;
 
     if (window.ModeManager && window.ModeManager.captureSnapshot) {
       window.ModeManager.captureSnapshot();
     }
 
-    const fullPath = `${pageKey}.${posPath}`;
-    let posObj = getNestedValue(material, fullPath) || {};
+    const effectivePosPath = resolveImagePositionPath(posPath, imgEl);
+    const fullPath = `${pageKey}.${effectivePosPath}`;
+    const fallbackPath = `${pageKey}.${posPath}`;
+    let posObj = getNestedValue(material, fullPath) || getNestedValue(material, fallbackPath) || {};
 
     // Ensure position object exists in material
     setNestedValue(material, fullPath, { ...posObj, [prop]: value });
@@ -1500,10 +1754,17 @@ window.SectionRenderer = (function() {
     render();
   }
 
+  function flushPendingEdits() {
+    _flushCallbacks.forEach(fn => {
+      try { fn(); } catch(e) { console.warn('[SectionRenderer] flush error:', e); }
+    });
+  }
+
   return {
     init,
     render: rerender,
     getMaterial,
-    updateMaterial
+    updateMaterial,
+    flushPendingEdits
   };
 })();

@@ -3126,7 +3126,7 @@ body.edit-mode .card-grid-ratio-controls {
   transform-origin: center center;
   opacity: 0;
   pointer-events: none;
-  overflow: hidden;
+  overflow: hidden; /* Prevent panel itself from scrolling, only content should scroll */
 }
 
 .id-detail-panel--active {
@@ -3313,6 +3313,11 @@ body.edit-mode .card-grid-ratio-controls {
 
 .id-detail-panel ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+/* Ensure detail-rich-text can scroll properly */
+.id-detail-panel .detail-rich-text {
+  overflow-y: auto !important;
 }
 
 /* Smooth transition for item borders */
@@ -3556,6 +3561,41 @@ body.edit-mode .id-animation-selector {
 .til-detail-content {
   will-change: transform, opacity;
   width: 100%;
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 8px; /* Space for scrollbar */
+}
+
+/* Custom scrollbar for TIL content areas */
+.til-collapsed-content::-webkit-scrollbar,
+.til-detail-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.til-collapsed-content::-webkit-scrollbar-track,
+.til-detail-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.til-collapsed-content::-webkit-scrollbar-thumb,
+.til-detail-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.til-collapsed-content::-webkit-scrollbar-thumb:hover,
+.til-detail-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* For light theme sections */
+.til-container[data-til-theme="light"] .til-collapsed-content::-webkit-scrollbar-thumb,
+.til-container[data-til-theme="light"] .til-detail-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.til-container[data-til-theme="light"] .til-collapsed-content::-webkit-scrollbar-thumb:hover,
+.til-container[data-til-theme="light"] .til-detail-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 /* Right wrapper for carousel-style slides */
@@ -3572,16 +3612,43 @@ body.edit-mode .id-animation-selector {
 /* TIL title and description */
 .til-title {
   transition: opacity 0.3s ease;
+  /* Ensure title stays within container */
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  /* Auto-scale font size to fit - more aggressive scaling */
+  font-size: clamp(32px, 4vw, 64px);
+  line-height: 1.1;
+  /* Limit title height to prevent overflow */
+  max-height: 30vh;
+  overflow-y: auto;
 }
 
 .til-description {
   transition: opacity 0.3s ease;
+  /* Ensure description stays within container */
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  /* Limit description height */
+  max-height: 25vh;
+  overflow-y: auto;
 }
 
 /* Remove old FLIP morphing classes - no longer needed */
 .til-title--morphing,
 .til-description--morphing {
   /* Kept for compatibility */
+}
+
+/* Learn More button - fixed at bottom of collapsed content */
+.til-learn-more-btn {
+  position: static !important;
+  margin-top: 1.5rem;
+  z-index: 5;
 }
 
 /* Image wrapper slide animations */
@@ -3608,6 +3675,8 @@ body.edit-mode .id-animation-selector {
 .til-collapsed-content {
   opacity: 1;
   pointer-events: auto;
+  /* No extra padding needed as button is now in flow */
+  padding: 0;
 }
 
 .til-container[data-til-detail-state="expanded"] .til-collapsed-content {
