@@ -353,7 +353,8 @@ window.TemplateRegistry = (function() {
       detailEndImageUrl = '',
       detailEndImagePath = '',
       bannerShrinkRatio = null,
-      detailShrinkPath = ''
+      detailShrinkPath = '',
+      bannerUseNaturalSize = null
     } = options;
 
     const closeTarget = closeTargetValue ? `${closeTargetAttr}="${closeTargetValue}"` : '';
@@ -387,8 +388,10 @@ window.TemplateRegistry = (function() {
     const wrapShrinkStyle = shrinkRatio != null ? ` style="--detail-banner-shrink-ratio: ${shrinkRatio}"` : '';
     const shrinkPathAttr = detailShrinkPath ? ` data-detail-shrink-path="${detailShrinkPath}"` : '';
     
-    // Use natural size rendering when shrinkRatio is provided (for TIL templates)
-    const useNaturalSize = shrinkRatio != null;
+    // Allow callers to choose whether shrink mode uses natural-size image rendering.
+    const useNaturalSize = typeof bannerUseNaturalSize === 'boolean'
+      ? bannerUseNaturalSize
+      : (shrinkRatio != null);
 
     return `
       <div class="detail-content-wrap w-full h-full flex flex-col${wrapShrinkClass}" ${bannerControlAttrs}${wrapShrinkStyle}${shrinkPathAttr}>
@@ -758,6 +761,9 @@ window.TemplateRegistry = (function() {
       const delay = (i + 1) * 0.1;
       const flipEnabled = card.flipEnabled === true;
       const showDetailBanner = card.showDetailBanner !== false;
+      const detailBannerRatio = Number.isFinite(Number(card.detailBannerRatio))
+        ? Number(card.detailBannerRatio)
+        : 60;
 
       const frontContent = `
         <div class="h-full rounded-[24px] overflow-hidden bg-surface-dark grid card-grid-front-layout group hover:bg-surface-darker transition-colors duration-300" style="grid-template-rows: ${coverRatio}% ${textRatio}%;" data-card-grid-front-layout="true">
@@ -796,6 +802,9 @@ window.TemplateRegistry = (function() {
             closeTargetValue: 'true',
             bannerImageUrl: imgUrl,
             bannerImagePath: `features.cards.${i}.image`,
+            bannerShrinkRatio: detailBannerRatio,
+            detailShrinkPath: `features.cards.${i}.detailBannerRatio`,
+            bannerUseNaturalSize: false,
             detailEndImageUrl,
             detailEndImagePath: `features.cards.${i}.detailEndImage`
           })}

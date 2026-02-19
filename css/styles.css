@@ -2765,6 +2765,23 @@ body.edit-mode .img-position-controls {
   gap: 8px;
 }
 
+.img-position-controls .detail-banner-ratio-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.img-position-controls .detail-banner-ratio-wrap input[type="range"] {
+  width: 84px;
+}
+
+.img-position-controls .detail-banner-ratio-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 36px;
+}
+
 .img-position-controls .img-position-banner-btn {
   display: inline-flex;
   align-items: center;
@@ -3766,9 +3783,10 @@ body.edit-mode .id-animation-selector {
 
 /* Detail panel: banner image shrink (configurable ratio, image not stretched to fill) */
 .detail-content-wrap--banner-shrunk .detail-banner-media {
+  height: clamp(120px, calc(var(--detail-banner-shrink-ratio, 60) * 1vh), 60vh);
   min-height: 120px;
-  max-height: min(60vh, calc(var(--detail-banner-shrink-ratio, 60) * 1vh));
-  background-size: contain;
+  max-height: 60vh;
+  background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
   flex-shrink: 0;

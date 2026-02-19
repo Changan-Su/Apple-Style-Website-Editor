@@ -703,12 +703,22 @@ window.EditorSystem = (function() {
   }
 
   function enableDetailBannerToggles() {
+    function clampBannerRatio(value) {
+      return Math.max(20, Math.min(100, Math.round(Number(value))));
+    }
+
     // All details (tabbed-content, card-grid, text-image-left/right, accordion) use the same panel + bar
     const detailPanels = document.querySelectorAll('[data-detail-banner-configurable="true"]');
     detailPanels.forEach(panel => {
       const bannerPath = panel.getAttribute('data-detail-banner-path');
+      const ratioPath = panel.getAttribute('data-detail-shrink-path');
       if (!bannerPath) return;
       const currentEnabled = panel.getAttribute('data-detail-banner-enabled') !== 'false';
+      const material = window.ModeManager.getMaterial();
+      const currentRatioRaw = ratioPath ? getValueByPath(material, `index.${ratioPath}`) : undefined;
+      const currentRatio = Number.isFinite(Number(currentRatioRaw))
+        ? clampBannerRatio(currentRatioRaw)
+        : 60;
 
       // Prefer: put toggle in the same bar as position/scale (on detail-banner-media)
       const bannerMedia = panel.querySelector('.detail-banner-media');
@@ -759,6 +769,57 @@ window.EditorSystem = (function() {
         });
         panel.appendChild(controls);
       }
+
+      // Add visual slider to the same image control bar for banner height ratio.
+      if (positionBar && ratioPath && !positionBar.querySelector('.detail-banner-ratio-wrap')) {
+        const ratioWrap = document.createElement('div');
+        ratioWrap.className = 'detail-banner-ratio-wrap';
+        ratioWrap.innerHTML = `
+          <label>B</label>
+          <input type="range" min="20" max="100" step="1" value="${currentRatio}" data-detail-banner-action="ratio" title="Banner height ratio">
+          <span class="detail-banner-ratio-value" data-detail-banner-action="ratio-value">${currentRatio}%</span>
+          <button type="button" class="reset-btn" data-detail-banner-action="ratio-reset">Reset</button>
+          <div class="divider"></div>
+        `;
+        positionBar.insertBefore(ratioWrap, positionBar.firstChild);
+
+        const ratioInput = ratioWrap.querySelector('[data-detail-banner-action="ratio"]');
+        const ratioValue = ratioWrap.querySelector('[data-detail-banner-action="ratio-value"]');
+        const resetBtn = ratioWrap.querySelector('[data-detail-banner-action="ratio-reset"]');
+
+        function applyRatioLive(ratio) {
+          const safe = clampBannerRatio(ratio);
+          panel.style.setProperty('--detail-banner-shrink-ratio', String(safe));
+          ratioValue.textContent = `${safe}%`;
+        }
+
+        function saveRatio(ratio) {
+          const safe = clampBannerRatio(ratio);
+          if (window.ModeManager.captureSnapshot) window.ModeManager.captureSnapshot();
+          setFlipConfigValue(ratioPath, safe);
+        }
+
+        ratioInput.addEventListener('input', (event) => {
+          event.stopPropagation();
+          applyRatioLive(parseInt(ratioInput.value, 10));
+        });
+
+        ratioInput.addEventListener('change', (event) => {
+          event.stopPropagation();
+          const safe = clampBannerRatio(parseInt(ratioInput.value, 10));
+          ratioInput.value = String(safe);
+          applyRatioLive(safe);
+          saveRatio(safe);
+        });
+
+        resetBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          ratioInput.value = '60';
+          applyRatioLive(60);
+          saveRatio(60);
+        });
+      }
     });
 
     if (window.lucide) {
@@ -768,6 +829,7 @@ window.EditorSystem = (function() {
 
   function disableDetailBannerToggles() {
     document.querySelectorAll('.detail-banner-toggle-wrap').forEach(el => el.remove());
+    document.querySelectorAll('.detail-banner-ratio-wrap').forEach(el => el.remove());
     document.querySelectorAll('.detail-banner-config-controls').forEach(el => el.remove());
   }
 
@@ -950,6 +1012,7 @@ window.EditorSystem = (function() {
         description: 'Edit this card description.',
         detail: 'Add card detail content here.',
         showDetailBanner: true,
+        detailBannerRatio: 60,
         cta: 'Learn more',
         flipEnabled: false,
         flipDirection: 'y',
