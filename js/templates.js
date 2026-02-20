@@ -46,15 +46,16 @@ window.TemplateRegistry = (function() {
     `;
   }
 
-  function renderDetailMedia(url, materialPath, variant = 'banner', useNaturalSize = false, shrinkRatio = null) {
+  function renderDetailMedia(url, materialPath, variant = 'banner', useNaturalSize = false, shrinkRatio = null, positionPath = '') {
     if (!url) return '';
     const targetClass = variant === 'banner' ? 'detail-banner-media' : 'detail-end-media';
     const materialAttr = materialPath ? `data-material-img="${materialPath}"` : '';
+    const positionAttr = positionPath ? `data-image-position-path="${positionPath}"` : '';
     const detailMediaAttr = 'data-detail-media="true"';
 
     if (isVideoUrl(url)) {
       return `
-        <div class="${targetClass}" ${materialAttr} ${detailMediaAttr}>
+        <div class="${targetClass}" ${materialAttr} ${positionAttr} ${detailMediaAttr}>
           <video
             src="${url}"
             class="w-full h-full object-cover"
@@ -72,13 +73,13 @@ window.TemplateRegistry = (function() {
     // Natural size mode: render <img> at original dimensions with max constraints
     if (useNaturalSize && shrinkRatio != null) {
       return `
-        <div class="${targetClass} detail-banner-media--natural" ${materialAttr} ${detailMediaAttr}>
+        <div class="${targetClass} detail-banner-media--natural" ${materialAttr} ${positionAttr} ${detailMediaAttr}>
           <img src="${url}" class="detail-banner-img-natural" alt="" />
         </div>
       `;
     }
 
-    return `<div class="${targetClass}" style="background-image: url('${url}');" ${materialAttr} ${detailMediaAttr}></div>`;
+    return `<div class="${targetClass}" style="background-image: url('${url}');" ${materialAttr} ${positionAttr} ${detailMediaAttr}></div>`;
   }
 
   function splitTableCells(line) {
@@ -350,6 +351,7 @@ window.TemplateRegistry = (function() {
       closeTargetValue = '',
       bannerImageUrl = '',
       bannerImagePath = '',
+      detailBannerPositionPath = '',
       detailEndImageUrl = '',
       detailEndImagePath = '',
       bannerShrinkRatio = null,
@@ -395,7 +397,7 @@ window.TemplateRegistry = (function() {
 
     return `
       <div class="detail-content-wrap w-full h-full flex flex-col${wrapShrinkClass}" ${bannerControlAttrs}${wrapShrinkStyle}${shrinkPathAttr}>
-        ${bannerEnabled ? renderDetailMedia(bannerImageUrl, bannerImagePath, 'banner', useNaturalSize, shrinkRatio) : ''}
+        ${bannerEnabled ? renderDetailMedia(bannerImageUrl, bannerImagePath, 'banner', useNaturalSize, shrinkRatio, detailBannerPositionPath) : ''}
         <div class="${backPanelClass} detail-content-panel">
           <div class="flex items-center justify-between gap-4">
             <h4 class="text-[36px] font-semibold text-white leading-tight" data-material="${titlePath}">${title || ''}</h4>
@@ -614,6 +616,16 @@ window.TemplateRegistry = (function() {
           <span>Exit Video Mod</span>
         </button>
 
+        <div class="hero-video-controls">
+          <button class="hero-video-playpause" aria-label="Pause">
+            <i data-lucide="pause" class="w-4 h-4"></i>
+          </button>
+          <div class="hero-video-progress-track">
+            <div class="hero-video-progress-fill"></div>
+          </div>
+          <span class="hero-video-time">0:00</span>
+        </div>
+
         <div class="hero-content-overlay relative z-10 w-full max-w-[1440px] px-[120px] pb-[160px] flex flex-col items-end text-right">
           <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md mb-6 border border-white/10">
             <span class="text-sm font-medium text-white" data-material="hero.badge">${data.badge || ''}</span>
@@ -712,6 +724,7 @@ window.TemplateRegistry = (function() {
             detailBlocksPath: `highlights.items.${i}.detailBlocks`,
             bannerImageUrl: imgUrl,
             bannerImagePath: `highlights.items.${i}.images.main`,
+            detailBannerPositionPath: `highlights.items.${i}.images.position`,
             detailBannerPath: `highlights.items.${i}.showDetailBanner`,
             detailEndImageUrl,
             detailEndImagePath: `highlights.items.${i}.detailEndImage`,
@@ -725,7 +738,7 @@ window.TemplateRegistry = (function() {
     return `
       <section id="highlights" class="w-full bg-black py-[100px] flex flex-col gap-[60px] items-center">
         <div class="w-full max-w-[1440px] px-[120px] text-center flex flex-col gap-4 fade-in-up">
-          <h2 class="text-[21px] font-semibold text-text-muted" data-material="highlights.label">${data.label || 'Highlights'}</h2>
+          ${data.label ? `<h2 class="text-[21px] font-semibold text-text-muted" data-material="highlights.label">${data.label}</h2>` : ''}
           <h3 class="text-[56px] font-semibold text-white leading-tight" data-material="highlights.headline">${data.headline || ''}</h3>
         </div>
 
@@ -807,6 +820,7 @@ window.TemplateRegistry = (function() {
             closeTargetValue: 'true',
             bannerImageUrl: imgUrl,
             bannerImagePath: `features.cards.${i}.image`,
+            detailBannerPositionPath: `features.cards.${i}.detailImagePosition`,
             bannerShrinkRatio: detailBannerRatio,
             detailShrinkPath: `features.cards.${i}.detailBannerRatio`,
             bannerUseNaturalSize: false,
@@ -1274,7 +1288,7 @@ window.TemplateRegistry = (function() {
             <i data-lucide="${isFirst ? 'chevron-down' : 'chevron-right'}"
                class="w-6 h-6 ${isFirst ? 'text-white' : 'text-white/30'} group-hover:text-white/70 transition-all duration-300 flex-shrink-0"></i>
           </div>
-          <div class="id-item-desc text-[17px] text-white/60 leading-relaxed ${isFirst ? 'id-item-desc--open' : ''} transition-all duration-500 ease-out"
+          <div class="id-item-desc text-[17px] text-white/60 leading-relaxed ${isFirst ? 'id-item-desc--open' : ''}"
                data-material="${sectionId}.items.${i}.description">
             ${item.description || ''}
           </div>
@@ -1314,7 +1328,11 @@ window.TemplateRegistry = (function() {
     return `
       <section id="${sectionId}" class="w-full bg-black py-[120px]">
         <div class="max-w-[1440px] mx-auto px-[120px]">
-          ${data.headline ? `<h2 class="text-[64px] font-semibold text-white leading-[1.05] mb-[80px] fade-in-up" data-material="${sectionId}.headline">${data.headline}</h2>` : ''}
+          ${(data.headline || data.subheadline) ? `
+          <div class="text-center mb-[80px] fade-in-up">
+            ${data.headline ? `<h2 class="text-[64px] font-semibold text-white leading-[1.05]" data-material="${sectionId}.headline">${data.headline}</h2>` : ''}
+            ${data.subheadline ? `<p class="text-[21px] text-white/50 leading-[1.5] mt-4 max-w-[720px] mx-auto font-normal" data-material="${sectionId}.subheadline">${data.subheadline}</p>` : ''}
+          </div>` : ''}
           <div class="flex gap-[80px] items-start">
             <div class="w-[500px] flex flex-col fade-in-up"
                  data-id-list="${sectionId}"
@@ -1328,13 +1346,9 @@ window.TemplateRegistry = (function() {
                  style="transition-delay: 0.2s;">
               <div class="id-detail-container w-full h-full shadow-2xl shadow-black/40 rounded-[32px] relative overflow-hidden"
                    data-id-detail-container="${sectionId}"
-                   data-animation="flip-y"
                    data-current-index="0"
                    data-total-panels="${items.length}">
-                <div class="id-detail-flipper w-full h-full absolute inset-0"
-                     data-id-flipper="${sectionId}">
                   ${detailPanelsHtml}
-                </div>
               </div>
             </div>
           </div>
@@ -1386,15 +1400,109 @@ window.TemplateRegistry = (function() {
 
   // Quiz Template
   function quizTemplate(sectionId, data, material) {
+    const questions = data.questions || [];
+    const isCollapsed = data.collapsed !== false;
+    const collapsedLabel = data.collapsedLabel || 'Quick Quiz';
+    
+    // Render individual question cards with data-material attributes
+    const questionsHtml = questions.map((q, qIdx) => {
+      const optionsHtml = (q.options || []).map((opt, optIdx) => `
+        <button 
+          class="quiz-option-btn w-full text-left p-5 rounded-2xl bg-surface-darker border-2 border-white/10 text-white transition-all duration-300 hover:border-accent-cyan/50 hover:bg-white/5 relative overflow-hidden"
+          data-question-index="${qIdx}"
+          data-option-index="${optIdx}"
+        >
+          <span class="relative z-10" data-material="${sectionId}.questions.${qIdx}.options.${optIdx}">${opt}</span>
+          <div class="quiz-option-checkmark absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="quiz-option-particles absolute inset-0 pointer-events-none"></div>
+        </button>
+      `).join('');
+      
+      return `
+        <div class="quiz-question-card ${qIdx === 0 ? 'active' : ''}" data-question-index="${qIdx}">
+          <div class="mb-4 flex items-center gap-3 text-white/60">
+            <span class="text-sm font-medium">Question ${qIdx + 1} of ${questions.length}</span>
+            <div class="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-accent-cyan rounded-full transition-all duration-300" style="width: ${((qIdx) / questions.length) * 100}%"></div>
+            </div>
+          </div>
+          <h3 class="text-2xl md:text-3xl font-semibold text-white mb-8" data-material="${sectionId}.questions.${qIdx}.question">
+            ${q.question || ''}
+          </h3>
+          <div class="quiz-options-grid grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            ${optionsHtml}
+          </div>
+          <div class="quiz-explanation-panel hidden mt-6 p-6 rounded-2xl bg-white/5 border border-white/10">
+            <div class="flex items-start gap-3">
+              <div class="quiz-explanation-icon flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1">
+                <i data-lucide="lightbulb" class="w-5 h-5"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-lg font-semibold text-white mb-2">Explanation</h4>
+                <p class="text-text-muted leading-relaxed" data-material="${sectionId}.questions.${qIdx}.explanation">${q.explanation || ''}</p>
+              </div>
+            </div>
+          </div>
+          <div class="quiz-next-btn-container hidden mt-8 flex justify-end">
+            <button class="quiz-next-btn px-8 py-4 rounded-full bg-accent-blue text-white font-medium hover:bg-blue-600 transition-all duration-300 flex items-center gap-2">
+              <span>${qIdx < questions.length - 1 ? 'Next Question' : 'View Results'}</span>
+              <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
     return `
-      <section id="${sectionId}" class="w-full bg-black py-[120px]">
-        <div class="max-w-[1000px] mx-auto px-[120px]">
-          <div class="bg-surface-dark rounded-[32px] p-12 border border-white/10">
-            <h2 class="text-[48px] font-semibold text-white mb-4" data-material="${sectionId}.title">${data.title || 'Quiz'}</h2>
-            <p class="text-xl text-text-muted mb-12" data-material="${sectionId}.description">${data.description || ''}</p>
+      <section id="${sectionId}" class="w-full bg-black py-12 md:py-20 quiz-section ${isCollapsed ? 'quiz-collapsed' : 'quiz-expanded'}" data-quiz-id="${sectionId}">
+        <!-- Collapsed Strip -->
+        <div class="quiz-collapsed-strip max-w-[1000px] mx-auto px-6 md:px-[120px] cursor-pointer" onclick="QuizEngine.toggleCollapse('${sectionId}')">
+          <div class="flex items-center justify-center gap-4 py-6 px-8 rounded-full bg-surface-dark border border-white/10 hover:border-accent-cyan/50 transition-all duration-300 hover:bg-white/5">
+            <i data-lucide="help-circle" class="w-6 h-6 text-accent-cyan"></i>
+            <span class="text-xl font-semibold text-white" data-material="${sectionId}.collapsedLabel">${collapsedLabel}</span>
+            <i data-lucide="chevron-down" class="w-6 h-6 text-white/60 quiz-chevron transition-transform duration-300"></i>
+          </div>
+        </div>
+        
+        <!-- Expanded Content -->
+        <div class="quiz-expanded-content max-w-[1000px] mx-auto px-6 md:px-[120px]">
+          <div class="bg-surface-dark rounded-[32px] p-8 md:p-12 border border-white/10">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-8">
+              <div class="flex-1">
+                <h2 class="text-[32px] md:text-[48px] font-semibold text-white mb-4" data-material="${sectionId}.title">${data.title || 'Quiz'}</h2>
+                <p class="text-lg md:text-xl text-text-muted mb-4" data-material="${sectionId}.description">${data.description || ''}</p>
+              </div>
+              <button 
+                onclick="QuizEngine.toggleCollapse('${sectionId}')"
+                class="flex-shrink-0 ml-4 p-2 rounded-full hover:bg-white/5 transition-colors"
+                aria-label="Collapse quiz"
+              >
+                <i data-lucide="x" class="w-6 h-6 text-white/60"></i>
+              </button>
+            </div>
             
-            <div id="quiz-container-${sectionId}" class="quiz-container" data-quiz-id="${sectionId}">
-              <!-- Quiz questions will be rendered by quiz.js -->
+            <!-- Questions Container (only one visible at a time) -->
+            <div id="quiz-questions-${sectionId}" class="quiz-questions-container relative min-h-[500px]">
+              ${questionsHtml}
+            </div>
+            
+            <!-- Score Summary (hidden initially) -->
+            <div class="quiz-score-summary hidden mt-8 p-8 rounded-2xl bg-gradient-to-br from-accent-cyan/20 to-accent-blue/20 border border-accent-cyan/30">
+              <div class="text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent-cyan/20 mb-4">
+                  <i data-lucide="trophy" class="w-10 h-10 text-accent-cyan"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-white mb-2">Quiz Complete!</h3>
+                <p class="text-xl text-white/80 mb-4">You scored <span class="quiz-final-score font-bold text-accent-cyan">0</span> out of <span class="font-bold">${questions.length}</span></p>
+                <button onclick="QuizEngine.reset('${sectionId}')" class="px-6 py-3 rounded-full bg-accent-blue text-white font-medium hover:bg-blue-600 transition-colors">
+                  Try Again
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -39,6 +39,7 @@ window.EditorSystem = (function() {
     }, 150);
     enableCollectionEditors();
     enableReferenceEditing();
+    enableQuizEditing();
     setupAtMentionSystem();
     setupSlashCommandSystem();
     setupCitationClickHandlers();
@@ -194,6 +195,7 @@ window.EditorSystem = (function() {
       const displayName = section.name || formatSectionId(section.id);
       const templateName = section.template.replace(/-/g, ' ');
       const disabledClass = section.enabled ? '' : 'disabled';
+      const showInNav = section.showInNav !== false;
       
       return `
         <div class="sidebar-section-card ${disabledClass}" data-sidebar-section-id="${section.id}">
@@ -201,6 +203,12 @@ window.EditorSystem = (function() {
           <div class="sidebar-section-name" data-sidebar-name-id="${section.id}">${displayName}</div>
           <div class="sidebar-section-id text-white/55 text-xs" data-sidebar-id-value="${section.id}">ID: ${section.id}</div>
           <div class="sidebar-section-template">${templateName}</div>
+          <div class="sidebar-section-nav-toggle" data-sidebar-nav-toggle="${section.id}" data-show-in-nav="${showInNav ? 'true' : 'false'}">
+            <span>Menu</span>
+            <button type="button" class="sidebar-mini-toggle ${showInNav ? 'is-on' : ''}" aria-label="Toggle section menu link visibility" title="Show in top menu">
+              <span class="sidebar-mini-toggle-knob"></span>
+            </button>
+          </div>
         </div>
       `;
     }).join('');
@@ -211,6 +219,10 @@ window.EditorSystem = (function() {
       
       // Click to scroll
       card.addEventListener('click', (e) => {
+        if (e.target.closest('[data-sidebar-nav-toggle]')) {
+          return;
+        }
+
         // Don't scroll if we're editing the name
         if (e.target.hasAttribute('contenteditable') && e.target.getAttribute('contenteditable') === 'true') {
           return;
@@ -314,6 +326,16 @@ window.EditorSystem = (function() {
           idEl.blur();
         }
       });
+
+      const navToggleWrap = card.querySelector('[data-sidebar-nav-toggle]');
+      if (navToggleWrap) {
+        navToggleWrap.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const current = navToggleWrap.getAttribute('data-show-in-nav') !== 'false';
+          updateSectionNavVisibility(sectionId, !current);
+        });
+      }
     });
   }
 
@@ -338,6 +360,26 @@ window.EditorSystem = (function() {
         sidebarName.textContent = newName;
       }
     }
+  }
+
+  function updateSectionNavVisibility(sectionId, showInNav) {
+    if (window.ModeManager.captureSnapshot) {
+      window.ModeManager.captureSnapshot();
+    }
+
+    const material = window.ModeManager.getMaterial();
+    const section = material?.config?.sections?.find(s => s.id === sectionId);
+    if (!section) return;
+
+    section.showInNav = !!showInNav;
+    window.ModeManager.updateMaterialInMemory(material);
+
+    if (window.SectionRenderer && window.SectionRenderer.render) {
+      window.SectionRenderer.render();
+    }
+
+    updateSidebarContent();
+    setupSectionObserver();
   }
 
   function isValidSectionId(id) {
@@ -799,9 +841,19 @@ window.EditorSystem = (function() {
           setFlipConfigValue(ratioPath, safe);
         }
 
+        function cacheRatio(ratio) {
+          if (!ratioPath) return;
+          const safe = clampBannerRatio(ratio);
+          const material = window.ModeManager.getMaterial();
+          updateMaterialByPath(material, `index.${ratioPath}`, safe);
+          window.ModeManager.updateMaterialInMemory(material);
+        }
+
         ratioInput.addEventListener('input', (event) => {
           event.stopPropagation();
-          applyRatioLive(parseInt(ratioInput.value, 10));
+          const safe = clampBannerRatio(parseInt(ratioInput.value, 10));
+          applyRatioLive(safe);
+          cacheRatio(safe);
         });
 
         ratioInput.addEventListener('change', (event) => {
@@ -1735,6 +1787,7 @@ window.EditorSystem = (function() {
       id,
       template,
       enabled: true,
+      showInNav: true,
       order: sections.length
     };
     
@@ -1807,67 +1860,101 @@ window.EditorSystem = (function() {
         alert('Failed to save');
       }
     } else {
-      // Offline mode: save to local folder using File System Access API
-      if (!window.FolderPermissionManager || !window.FolderPermissionManager.isSupported()) {
-        alert('File System Access API not supported. Please use Chrome 86+ or Edge 86+.\n\nYou can use Export button to download a ZIP instead.');
-        return;
+      // Offline mode: always persist to IndexedDB first as the authoritative draft
+      let indexedDBOk = false;
+      if (window.ModeManager && window.ModeManager.saveOfflineDraft) {
+        try {
+          indexedDBOk = await window.ModeManager.saveOfflineDraft(material, { notifyOnFailure: false });
+        } catch (e) {
+          console.warn('IndexedDB save in saveAll failed:', e);
+        }
       }
 
-      try {
-        // Get or request folder permission
-        let dirHandle = await window.FolderPermissionManager.getVerifiedFolderHandle('readwrite');
-        
-        if (!dirHandle) {
-          // Need to request folder selection
-          const confirm = window.confirm('Select a folder to save the complete viewer site.\n\nThis will create/update:\n- index.html (viewer)\n- material.json\n- Media files in uploads/\n- CSS and JS files\n\nContinue?');
+      // Then try saving the complete site to a local folder if File System Access is available
+      let folderSaveOk = false;
+      if (window.FolderPermissionManager && window.FolderPermissionManager.isSupported()) {
+        try {
+          let dirHandle = await window.FolderPermissionManager.getVerifiedFolderHandle('readwrite');
           
-          if (!confirm) return;
-          
-          dirHandle = await window.FolderPermissionManager.requestFolderPermission();
           if (!dirHandle) {
-            // User cancelled
-            return;
+            const confirmFolder = window.confirm('Select a folder to save the complete viewer site.\n\nThis will create/update:\n- index.html (viewer)\n- material.json\n- Media files in uploads/\n- CSS and JS files\n\nContinue?');
+            
+            if (confirmFolder) {
+              dirHandle = await window.FolderPermissionManager.requestFolderPermission();
+            }
           }
-        }
 
-        // Show progress in status message
-        const statusEl = document.createElement('div');
-        statusEl.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 200; background: rgba(0,0,0,0.9); color: white; padding: 16px 24px; rounded: 12px; border: 1px solid rgba(255,255,255,0.1); min-width: 300px; border-radius: 12px;';
-        statusEl.innerHTML = '<div style="font-weight: 600; margin-bottom: 8px;">Saving to folder...</div><div id="save-progress" style="font-size: 12px; color: rgba(255,255,255,0.7);"></div>';
-        document.body.appendChild(statusEl);
+          if (dirHandle) {
+            // Hard-persist editor material into selected folder files first.
+            // This avoids any refresh fallback issues caused by cache/storage order.
+            let directWriteOk = false;
+            try {
+              if (window.FileSystemWriter && window.FileSystemWriter.writeTextFile) {
+                const rawMaterial = JSON.stringify(material, null, 2);
+                await window.FileSystemWriter.writeTextFile(dirHandle, 'material.json', rawMaterial);
+                // Keep docs preview in sync when this folder has docs/.
+                try {
+                  await window.FileSystemWriter.writeTextFile(dirHandle, 'docs/material.json', rawMaterial);
+                } catch (syncErr) {
+                  console.warn('docs/material.json sync skipped:', syncErr);
+                }
+                directWriteOk = true;
+              }
+            } catch (directWriteErr) {
+              console.warn('Direct material write failed:', directWriteErr);
+            }
 
-        const progressEl = statusEl.querySelector('#save-progress');
-        const updateProgress = (message, progress) => {
-          if (progressEl) {
-            progressEl.textContent = `${message} (${progress}%)`;
+            const statusEl = document.createElement('div');
+            statusEl.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 200; background: rgba(0,0,0,0.9); color: white; padding: 16px 24px; rounded: 12px; border: 1px solid rgba(255,255,255,0.1); min-width: 300px; border-radius: 12px;';
+            statusEl.innerHTML = '<div style="font-weight: 600; margin-bottom: 8px;">Saving to folder...</div><div id="save-progress" style="font-size: 12px; color: rgba(255,255,255,0.7);"></div>';
+            document.body.appendChild(statusEl);
+
+            const progressEl = statusEl.querySelector('#save-progress');
+            const updateProgress = (message, progress) => {
+              if (progressEl) {
+                progressEl.textContent = `${message} (${progress}%)`;
+              }
+            };
+
+            const result = await window.OfflineSiteSaver.saveCompleteOfflineSite(
+              material,
+              dirHandle,
+              updateProgress
+            );
+
+            statusEl.remove();
+
+            if (result.success) {
+              folderSaveOk = true;
+              const folderName = window.FolderPermissionManager.getFolderName(dirHandle);
+              alert(`Saved successfully to folder: ${folderName}\n\n` +
+                    `Files written: ${result.fileCount}\n` +
+                    `Media files: ${result.mediaCount}\n\n` +
+                    `Draft also saved to browser storage.\n` +
+                    `material.json direct write: ${directWriteOk ? 'OK' : 'FAILED'}`);
+              updateFolderStatusDisplay();
+            } else {
+              if (directWriteOk) {
+                folderSaveOk = true;
+                alert(`Package export failed: ${result.error || 'Unknown error'}\n\n` +
+                      `But material.json was written directly to selected folder.\n` +
+                      `Draft ${indexedDBOk ? 'was' : 'was NOT'} saved to browser storage.`);
+              } else {
+                alert(`Folder save failed: ${result.error || 'Unknown error'}\n\nDraft ${indexedDBOk ? 'was' : 'was NOT'} saved to browser storage.`);
+              }
+            }
           }
-        };
-
-        // Save complete site
-        const result = await window.OfflineSiteSaver.saveCompleteOfflineSite(
-          material,
-          dirHandle,
-          updateProgress
-        );
-
-        statusEl.remove();
-
-        if (result.success) {
-          const folderName = window.FolderPermissionManager.getFolderName(dirHandle);
-          alert(`Saved successfully to folder: ${folderName}\n\n` +
-                `Files written: ${result.fileCount}\n` +
-                `Media files: ${result.mediaCount}\n\n` +
-                `You can now open the index.html in that folder to view the site.`);
-          
-          // Update folder status display
-          updateFolderStatusDisplay();
-        } else {
-          alert(`Failed to save: ${result.error || 'Unknown error'}`);
+        } catch (error) {
+          console.error('Save to folder error:', error);
+          alert(`Folder save error: ${error.message}\n\nDraft ${indexedDBOk ? 'was' : 'was NOT'} saved to browser storage.`);
         }
+      }
 
-      } catch (error) {
-        console.error('Save to folder error:', error);
-        alert(`Failed to save to folder: ${error.message}`);
+      // If no folder save happened, show IndexedDB result
+      if (!folderSaveOk) {
+        alert(indexedDBOk
+          ? 'Saved to browser draft successfully!\n\n(Select a folder via "Select Folder" to also export a full viewer site.)'
+          : 'Failed to save. Browser storage is unavailable.');
       }
     }
   }
@@ -2211,6 +2298,7 @@ window.EditorSystem = (function() {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="./css/styles.css" rel="stylesheet">
+    <link href="./css/cinema-mode-overrides.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script>
       (function() {
@@ -2531,6 +2619,199 @@ window.EditorSystem = (function() {
     updateCitationsInDocument(refIdToDelete, items.length);
     
     window.ModeManager.updateMaterialInMemory(material);
+    window.SectionRenderer.render();
+    refresh();
+  }
+  
+  function updateCitationsInDocument(deletedId, newMaxId) {
+    // Find all citation elements and update their references
+    const allCitations = document.querySelectorAll('.ref-cite[data-ref-id]');
+    
+    allCitations.forEach(cite => {
+      const oldId = parseInt(cite.getAttribute('data-ref-id'));
+      
+      if (oldId === deletedId) {
+        // Remove citations of the deleted reference
+        cite.remove();
+      } else if (oldId > deletedId) {
+        // Decrement IDs of citations after the deleted one
+        const newId = oldId - 1;
+        cite.setAttribute('data-ref-id', newId);
+        cite.textContent = `[${newId}]`;
+      }
+    });
+  }
+  
+  // ========== Quiz Editing System ==========
+  
+  function enableQuizEditing() {
+    // Enable answer toggle buttons in edit mode
+    const quizSections = document.querySelectorAll('.quiz-section[data-quiz-id]');
+    quizSections.forEach(section => {
+      const quizId = section.getAttribute('data-quiz-id');
+      addQuizEditControls(quizId);
+    });
+  }
+  
+  function disableQuizEditing() {
+    // Remove quiz edit controls
+    document.querySelectorAll('.quiz-edit-controls').forEach(el => el.remove());
+  }
+  
+  function addQuizEditControls(quizId) {
+    const section = document.querySelector(`[data-quiz-id="${quizId}"]`);
+    if (!section) return;
+    
+    const material = window.ModeManager ? window.ModeManager.getMaterial() : null;
+    if (!material || !material.index || !material.index[quizId]) return;
+    
+    const quizData = material.index[quizId];
+    const questions = quizData.questions || [];
+    
+    // Add answer toggle controls to each question
+    questions.forEach((question, qIdx) => {
+      const questionCard = section.querySelector(`[data-question-index="${qIdx}"]`);
+      if (!questionCard) return;
+      
+      const optionsGrid = questionCard.querySelector('.quiz-options-grid');
+      if (!optionsGrid) return;
+      
+      // Add edit controls container if not exists
+      if (!questionCard.querySelector('.quiz-edit-controls')) {
+        const editControls = document.createElement('div');
+        editControls.className = 'quiz-edit-controls edit-mode-only mt-4 flex items-center gap-4 text-sm text-white/60';
+        editControls.innerHTML = `
+          <span>Correct Answer:</span>
+          <div class="flex gap-2">
+            ${question.options.map((opt, optIdx) => `
+              <button 
+                class="quiz-answer-toggle px-3 py-1.5 rounded-lg border transition-colors ${question.answer === optIdx ? 'border-green-500 bg-green-900/20 text-green-400' : 'border-white/20 text-white/60 hover:border-white/40'}"
+                data-question-index="${qIdx}"
+                data-option-index="${optIdx}"
+                onclick="EditorSystem.setQuizAnswer('${quizId}', ${qIdx}, ${optIdx})"
+              >
+                ${optIdx + 1}
+              </button>
+            `).join('')}
+          </div>
+          <button 
+            class="ml-auto px-3 py-1.5 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 hover:bg-red-900/30 transition-colors"
+            onclick="EditorSystem.deleteQuizQuestion('${quizId}', ${qIdx})"
+          >
+            Delete Question
+          </button>
+        `;
+        questionCard.appendChild(editControls);
+      }
+    });
+    
+    // Add "Add Question" button at the end
+    const questionsContainer = section.querySelector('.quiz-questions-container');
+    if (questionsContainer && !questionsContainer.querySelector('.quiz-add-question-btn')) {
+      const addButton = document.createElement('div');
+      addButton.className = 'quiz-add-question-btn edit-mode-only mt-6';
+      addButton.innerHTML = `
+        <button 
+          class="w-full px-6 py-4 rounded-2xl border-2 border-dashed border-white/20 text-white/60 hover:border-accent-cyan/50 hover:text-accent-cyan transition-all"
+          onclick="EditorSystem.addQuizQuestion('${quizId}')"
+        >
+          <i data-lucide="plus" class="w-5 h-5 inline mr-2"></i>
+          Add Question
+        </button>
+      `;
+      questionsContainer.appendChild(addButton);
+    }
+  }
+  
+  function setQuizAnswer(quizId, questionIndex, optionIndex) {
+    if (window.ModeManager && window.ModeManager.captureSnapshot) {
+      window.ModeManager.captureSnapshot();
+    }
+    
+    const material = window.ModeManager ? window.ModeManager.getMaterial() : null;
+    if (!material || !material.index || !material.index[quizId]) return;
+    
+    const quizData = material.index[quizId];
+    if (!quizData.questions || !quizData.questions[questionIndex]) return;
+    
+    // Update the correct answer
+    quizData.questions[questionIndex].answer = optionIndex;
+    
+    if (window.ModeManager) {
+      window.ModeManager.updateMaterialInMemory(material);
+    }
+    
+    // Re-render to update UI
+    window.SectionRenderer.render();
+    refresh();
+  }
+  
+  function addQuizQuestion(quizId) {
+    if (window.ModeManager && window.ModeManager.captureSnapshot) {
+      window.ModeManager.captureSnapshot();
+    }
+    
+    const material = window.ModeManager ? window.ModeManager.getMaterial() : null;
+    if (!material || !material.index || !material.index[quizId]) return;
+    
+    const quizData = material.index[quizId];
+    if (!quizData.questions) {
+      quizData.questions = [];
+    }
+    
+    // Add new question with placeholder content
+    quizData.questions.push({
+      question: "New question - click to edit",
+      options: ["Option A", "Option B", "Option C", "Option D"],
+      answer: 0,
+      explanation: "Explanation for this question - click to edit"
+    });
+    
+    if (window.ModeManager) {
+      window.ModeManager.updateMaterialInMemory(material);
+    }
+    
+    // Re-render and focus new question
+    window.SectionRenderer.render();
+    refresh();
+    
+    setTimeout(() => {
+      const newQuestionIndex = quizData.questions.length - 1;
+      const newQuestionEl = document.querySelector(`[data-material="${quizId}.questions.${newQuestionIndex}.question"]`);
+      if (newQuestionEl) {
+        newQuestionEl.focus();
+        const range = document.createRange();
+        range.selectNodeContents(newQuestionEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }, 100);
+  }
+  
+  function deleteQuizQuestion(quizId, questionIndex) {
+    if (!confirm('Delete this quiz question?')) {
+      return;
+    }
+    
+    if (window.ModeManager && window.ModeManager.captureSnapshot) {
+      window.ModeManager.captureSnapshot();
+    }
+    
+    const material = window.ModeManager ? window.ModeManager.getMaterial() : null;
+    if (!material || !material.index || !material.index[quizId]) return;
+    
+    const quizData = material.index[quizId];
+    if (!quizData.questions || !quizData.questions[questionIndex]) return;
+    
+    // Remove the question
+    quizData.questions.splice(questionIndex, 1);
+    
+    if (window.ModeManager) {
+      window.ModeManager.updateMaterialInMemory(material);
+    }
+    
+    // Re-render
     window.SectionRenderer.render();
     refresh();
   }
@@ -3746,6 +4027,9 @@ window.EditorSystem = (function() {
     refresh,
     refreshSidebar,
     setupCitationClickHandlers,
-    removeCitationClickHandlers
+    removeCitationClickHandlers,
+    setQuizAnswer,
+    addQuizQuestion,
+    deleteQuizQuestion
   };
 })();

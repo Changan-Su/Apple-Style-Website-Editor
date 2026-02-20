@@ -335,14 +335,28 @@ window.ModeManager = (function() {
 
   /**
    * Load material data with robust fallbacks.
-   * Priority: Local folder > Offline draft > material.json > Embedded JSON
+   * Priority: Offline draft (IndexedDB) > Local folder > material.json > Embedded JSON
+   *
+   * IndexedDB is now the primary draft store because saveAll() always writes
+   * there, whereas the local-folder permission can expire across sessions.
    */
   async function loadMaterial() {
     let materialData = null;
     const isFileProtocol = window.location.protocol === 'file:';
 
-    // Method 1: Try loading from authorized local folder (File System Access API)
-    if (window.FolderPermissionManager && window.OfflineSiteSaver) {
+    // Method 1: Try loading offline draft from IndexedDB/localStorage (most reliable persistence)
+    try {
+      const offlineDraft = await getOfflineDraft();
+      if (offlineDraft) {
+        materialData = offlineDraft;
+        console.info('Loaded offline draft from IndexedDB');
+      }
+    } catch (e) {
+      console.warn('IndexedDB draft load failed:', e);
+    }
+
+    // Method 2: Try loading from authorized local folder (File System Access API)
+    if (!materialData && window.FolderPermissionManager && window.OfflineSiteSaver) {
       try {
         const dirHandle = await window.FolderPermissionManager.getVerifiedFolderHandle('read', { requestIfNeeded: false });
         if (dirHandle) {
@@ -353,15 +367,6 @@ window.ModeManager = (function() {
         }
       } catch (e) {
         console.warn('Failed to load from local folder:', e);
-      }
-    }
-
-    // Method 2: Try loading offline draft from IndexedDB/localStorage (legacy support)
-    if (!materialData) {
-      const offlineDraft = await getOfflineDraft();
-      if (offlineDraft) {
-        materialData = offlineDraft;
-        console.info('Loaded offline draft from local storage');
       }
     }
 

@@ -26,7 +26,10 @@ window.OfflineSiteSaver = (function() {
    * Get list of CSS files
    */
   function getStyleFiles() {
-    return ['css/styles.css'];
+    return [
+      'css/styles.css',
+      'css/cinema-mode-overrides.css'
+    ];
   }
 
   /**
@@ -242,6 +245,7 @@ window.OfflineSiteSaver = (function() {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="./css/styles.css" rel="stylesheet">
+    <link href="./css/cinema-mode-overrides.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script>
       (function() {

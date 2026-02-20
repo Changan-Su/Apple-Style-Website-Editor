@@ -341,8 +341,7 @@ window.SectionRenderer = (function() {
             window.lucide.createIcons();
           }
 
-          // --- Animation logic based on animation type ---
-          const animationType = container.getAttribute('data-animation') || 'flip-y';
+          // --- Apple-style cross-fade transition ---
           const currentPanel = panels[currentIndex];
           const targetPanel = panels[targetIndex];
           if (!currentPanel || !targetPanel) {
@@ -350,69 +349,20 @@ window.SectionRenderer = (function() {
             return;
           }
 
-          if (animationType === 'cube-y' || animationType === 'cube-x') {
-            // Cube animation: update data-current-index to trigger CSS rotation
-            container.setAttribute('data-current-index', targetIndex);
-            
-            // Update active panel immediately
-            currentPanel.classList.remove('id-detail-panel--active');
-            targetPanel.classList.add('id-detail-panel--active');
-            
-            // Sync title from left to right panel
-            const leftTitle = item.querySelector('h3');
-            const rightTitle = targetPanel.querySelector('h3[data-material]');
-            if (leftTitle && rightTitle) {
-              rightTitle.textContent = leftTitle.textContent;
+          // Swap active class — CSS transition handles the smooth cross-fade
+          currentPanel.classList.remove('id-detail-panel--active');
+          targetPanel.classList.add('id-detail-panel--active');
+
+          currentIndex = targetIndex;
+
+          // Release lock after transition completes (matches CSS 0.38s)
+          setTimeout(() => {
+            isAnimating = false;
+
+            if (window.LatexRenderer && window.LatexRenderer.renderAll) {
+              window.LatexRenderer.renderAll();
             }
-            
-            currentIndex = targetIndex;
-
-            // Wait for rotation to complete
-            setTimeout(() => {
-              isAnimating = false;
-
-              // Render LaTeX in new panel if available
-              if (window.LatexRenderer && window.LatexRenderer.renderAll) {
-                window.LatexRenderer.renderAll();
-              }
-            }, 700); // Match CSS transition duration
-
-          } else {
-            // Flip animation: flip out current, flip in target
-            currentPanel.classList.remove('id-detail-panel--active');
-            currentPanel.classList.add('id-detail-panel--flip-out');
-
-            const onFlipOutEnd = () => {
-              currentPanel.removeEventListener('animationend', onFlipOutEnd);
-              currentPanel.classList.remove('id-detail-panel--flip-out');
-
-              targetPanel.classList.add('id-detail-panel--flip-in');
-              
-              // Sync title from left to right panel
-              const leftTitle = item.querySelector('h3');
-              const rightTitle = targetPanel.querySelector('h3[data-material]');
-              if (leftTitle && rightTitle) {
-                rightTitle.textContent = leftTitle.textContent;
-              }
-
-              const onFlipInEnd = () => {
-                targetPanel.removeEventListener('animationend', onFlipInEnd);
-                targetPanel.classList.remove('id-detail-panel--flip-in');
-                targetPanel.classList.add('id-detail-panel--active');
-                currentIndex = targetIndex;
-                isAnimating = false;
-
-                // Render LaTeX in new panel if available
-                if (window.LatexRenderer && window.LatexRenderer.renderAll) {
-                  window.LatexRenderer.renderAll();
-                }
-              };
-
-              targetPanel.addEventListener('animationend', onFlipInEnd);
-            };
-
-            currentPanel.addEventListener('animationend', onFlipOutEnd);
-          }
+          }, 400);
         });
       });
     });
@@ -433,7 +383,7 @@ window.SectionRenderer = (function() {
 
     // Get enabled sections sorted by order
     const sections = material.config.sections
-      .filter(s => s.enabled)
+      .filter(s => s.enabled && s.showInNav !== false)
       .sort((a, b) => a.order - b.order);
 
     // Create nav links for each section
@@ -578,10 +528,15 @@ window.SectionRenderer = (function() {
       function expandDetail() {
         if (detailState === 'expanded' || isAnimating) return;
         isAnimating = true;
-        const currentItem = items[currentIndex];
+
+        // Read from live material instead of stale items[] cache
+        const hasItemsArray = container.getAttribute('data-til-has-items') === 'true';
+        const itemPath = hasItemsArray ? `${sectionId}.items.${currentIndex}` : sectionId;
+        const liveItem = (material && getNestedValue(material, `${pageKey}.${itemPath}`)) || items[currentIndex];
+        const currentItem = liveItem;
         const shrinkRatio = currentItem.detailImageShrinkRatio || 60;
 
-        // Update detail content for current item
+        // Update detail content for current item (from live material)
         if (detailTitleEl) detailTitleEl.textContent = currentItem.title || '';
         if (detailTextEl) {
           const detailHtml = Array.isArray(currentItem.detailBlocks) && currentItem.detailBlocks.length > 0
@@ -611,66 +566,9 @@ window.SectionRenderer = (function() {
         const leftAreaWidth = containerWidth - rightWrapperWidth - gapWidth;
         leftArea.style.width = `${leftAreaWidth}px`;
         
-        // Switch to natural-size image display in detail state
-        // Get current image URL from imageWrapper's background-image or data attribute
-        let currentImageUrl = '';
-        const bgImage = imageWrapper.style.backgroundImage;
-        if (bgImage && bgImage !== 'none') {
-          // Extract URL from background-image: url("...")
-          const match = bgImage.match(/url\(['"]?([^'"]+)['"]?\)/);
-          if (match) {
-            currentImageUrl = match[1];
-          }
-        }
-        
-        // If no background image, try to get from data attribute or material
-        if (!currentImageUrl) {
-          const materialPath = imageWrapper.getAttribute('data-material-img');
-          if (materialPath && material) {
-            currentImageUrl = getImageUrl(materialPath, material);
-          }
-        }
-        
-        console.log('[TIL] expandDetail - currentImageUrl:', currentImageUrl);
-        console.log('[TIL] expandDetail - imageWrapper backgroundImage:', imageWrapper.style.backgroundImage);
-        
-        const isVideo = currentItem.isVideo || (currentImageUrl && isVideoUrl(currentImageUrl));
-        
-        if (currentImageUrl && !isVideo) {
-          console.log('[TIL] Creating natural-size image');
-          
-          // Clear background image
-          imageWrapper.style.backgroundImage = '';
-          imageWrapper.style.backgroundSize = '';
-          imageWrapper.style.backgroundPosition = '';
-          
-          // Create or update natural-size image
-          let naturalImg = imageWrapper.querySelector('.til-detail-natural-img');
-          if (!naturalImg) {
-            console.log('[TIL] Creating new img element');
-            naturalImg = document.createElement('img');
-            naturalImg.className = 'til-detail-natural-img';
-            naturalImg.setAttribute('data-til-detail-img', 'true');
-            imageWrapper.appendChild(naturalImg);
-          } else {
-            console.log('[TIL] Reusing existing img element');
-          }
-          naturalImg.src = currentImageUrl;
-          naturalImg.style.opacity = '0';
-          console.log('[TIL] Natural img element:', naturalImg);
-          
-          // Fade in natural image
-          setTimeout(() => {
-            if (naturalImg) {
-              naturalImg.style.opacity = '1';
-              console.log('[TIL] Natural image faded in');
-            }
-          }, 50);
-        } else if (!currentImageUrl) {
-          console.warn('[TIL] No image URL found');
-        } else if (isVideo) {
-          console.log('[TIL] Skipping - is video');
-        }
+        // Ensure detail mode uses crop/fill rendering and replays detail position profile.
+        const staleNaturalImg = imageWrapper.querySelector('.til-detail-natural-img');
+        if (staleNaturalImg) staleNaturalImg.remove();
         
         // Helper function to check if URL is video
         function isVideoUrl(url) {
@@ -714,6 +612,7 @@ window.SectionRenderer = (function() {
           detailContent.style.pointerEvents = 'auto';
           detailState = 'expanded';
           container.setAttribute('data-til-detail-state', 'expanded');
+          updateImageContent(currentItem, currentIndex);
           
           // Add resize handle for editor mode
           if (window.EditorSystem && document.body.classList.contains('edit-mode')) {
@@ -820,6 +719,19 @@ window.SectionRenderer = (function() {
         if (targetIndex < 0 || targetIndex >= items.length) return;
         isAnimating = true;
 
+        // Ensure contenteditable changes are committed before switching items.
+        const active = document.activeElement;
+        if (active && container.contains(active) && active.getAttribute('contenteditable') === 'true') {
+          active.blur();
+        }
+        // Force-flush editable bindings in this TIL/RIL block to avoid losing detail edits
+        // when switching tabs while detail mode is still expanded.
+        container.querySelectorAll('[data-material][contenteditable="true"]').forEach((editableEl) => {
+          if (editableEl !== active) {
+            editableEl.dispatchEvent(new Event('blur', { bubbles: true }));
+          }
+        });
+
         // IMPORTANT: Save current index data before switching
         saveCurrentTILData();
 
@@ -875,7 +787,7 @@ window.SectionRenderer = (function() {
           if (detailTitleEl) detailTitleEl.textContent = freshItem.title || '';
           if (detailTextEl) {
             const detailHtml = Array.isArray(freshItem.detailBlocks) && freshItem.detailBlocks.length > 0
-              ? window.TemplateRegistry.render('detailBlocks', sectionId, { detailBlocks: freshItem.detailBlocks }, material)
+              ? window.TemplateRegistry.render('detailBlocks', sectionId, { detailBlocks: freshItem.detailBlocks }, freshMaterial || material)
               : (freshItem.detail || 'Detail content goes here.');
             detailTextEl.innerHTML = detailHtml;
           }
@@ -916,7 +828,8 @@ window.SectionRenderer = (function() {
           setTimeout(() => {
             activeContent.style.transition = '';
             activeContent.style.transform = '';
-            activeContent.style.opacity = '';
+            activeContent.style.opacity = '1';
+            activeContent.style.pointerEvents = 'auto';
             rightWrapper.style.transition = '';
             rightWrapper.style.transform = '';
             rightWrapper.style.opacity = '';
@@ -991,13 +904,30 @@ window.SectionRenderer = (function() {
 
         // Save current image position/zoom state from DOM
         const naturalImg = imageWrapper.querySelector('.til-detail-natural-img');
-        if (detailState === 'expanded' && naturalImg) {
-          // Detail mode: read from natural image data attributes
-          const posDetail = {
-            x: Number(naturalImg.getAttribute('data-pos-x') || 50),
-            y: Number(naturalImg.getAttribute('data-pos-y') || 50),
-            scale: Number(naturalImg.getAttribute('data-pos-scale') || 100)
-          };
+        if (detailState === 'expanded') {
+          // Detail mode: prefer natural-image attrs (legacy), otherwise read background transform.
+          let posDetail;
+          if (naturalImg) {
+            const nx = Number(naturalImg.getAttribute('data-pos-x'));
+            const ny = Number(naturalImg.getAttribute('data-pos-y'));
+            const ns = Number(naturalImg.getAttribute('data-pos-scale'));
+            posDetail = {
+              x: Number.isFinite(nx) ? nx : 50,
+              y: Number.isFinite(ny) ? ny : 50
+            };
+            if (Number.isFinite(ns)) posDetail.scale = ns;
+          } else {
+            const bgPos = imageWrapper.style.backgroundPosition || '';
+            const bgSize = imageWrapper.style.backgroundSize || '';
+            const posParts = bgPos.split(/\s+/);
+            posDetail = {
+              x: Number.isFinite(parseFloat(posParts[0])) ? parseFloat(posParts[0]) : 50,
+              y: Number.isFinite(parseFloat(posParts[1])) ? parseFloat(posParts[1]) : 50
+            };
+            if (bgSize && bgSize !== 'cover' && bgSize !== 'contain' && Number.isFinite(parseFloat(bgSize))) {
+              posDetail.scale = parseFloat(bgSize);
+            }
+          }
           setNestedValue(material, `${pageKey}.${currentItemPath}.images.positionDetail`, posDetail);
           console.log('[TIL] Saved detail position:', posDetail);
         } else {
@@ -1098,33 +1028,25 @@ window.SectionRenderer = (function() {
           imageWrapper.style.backgroundSize = '';
           imageWrapper.style.backgroundPosition = '';
         } else {
-          // Detail mode: keep natural image and switch to target image immediately.
+          // Detail mode: show image at natural proportions (contain), not cropped.
+          // Hide container background/shadow/corners so no gray space shows around the image.
           if (detailState === 'expanded' && imgUrl) {
             const existingVideo = imageWrapper.querySelector('video');
             if (existingVideo) existingVideo.style.display = 'none';
-
-            imageWrapper.style.backgroundImage = '';
-            imageWrapper.style.backgroundSize = '';
-            imageWrapper.style.backgroundPosition = '';
-
-            let naturalImg = imageWrapper.querySelector('.til-detail-natural-img');
-            if (!naturalImg) {
-              naturalImg = document.createElement('img');
-              naturalImg.className = 'til-detail-natural-img';
-              naturalImg.setAttribute('data-til-detail-img', 'true');
-              imageWrapper.appendChild(naturalImg);
-            }
-            naturalImg.src = imgUrl;
-            naturalImg.style.opacity = '1';
+            const staleNaturalImg = imageWrapper.querySelector('.til-detail-natural-img');
+            if (staleNaturalImg) staleNaturalImg.remove();
+            imageWrapper.style.backgroundImage = `url(${imgUrl})`;
 
             const dx = Number.isFinite(Number(detailPos?.x)) ? Number(detailPos.x) : 50;
             const dy = Number.isFinite(Number(detailPos?.y)) ? Number(detailPos.y) : 50;
-            const ds = Number.isFinite(Number(detailPos?.scale)) ? Number(detailPos.scale) : 100;
-            naturalImg.setAttribute('data-pos-x', String(dx));
-            naturalImg.setAttribute('data-pos-y', String(dy));
-            naturalImg.setAttribute('data-pos-scale', String(ds));
-            naturalImg.style.objectPosition = `${dx}% ${dy}%`;
-            naturalImg.style.transform = `translate(-50%, -50%) scale(${ds / 100})`;
+            const rawDs = Number.isFinite(Number(detailPos?.scale)) ? Number(detailPos.scale) : null;
+            const ds = (rawDs !== null && rawDs !== 100) ? rawDs : null;
+            imageWrapper.style.backgroundSize = ds !== null ? `${ds}%` : 'contain';
+            imageWrapper.style.backgroundPosition = `${dx}% ${dy}%`;
+            imageWrapper.style.backgroundRepeat = 'no-repeat';
+            imageWrapper.style.backgroundColor = 'transparent';
+            imageWrapper.style.boxShadow = 'none';
+            imageWrapper.style.borderRadius = '0';
             return;
           }
 
@@ -1140,6 +1062,12 @@ window.SectionRenderer = (function() {
           } else {
             imageWrapper.style.backgroundImage = '';
           }
+
+          // Restore container styling for collapsed mode (detail strips them)
+          imageWrapper.style.backgroundRepeat = '';
+          imageWrapper.style.backgroundColor = '';
+          imageWrapper.style.boxShadow = '';
+          imageWrapper.style.borderRadius = '';
 
           // Collapsed mode priority: saved collapsed position > legacy bgStyle > default.
           const cx = Number.isFinite(Number(collapsedPos?.x)) ? Number(collapsedPos.x) : null;
@@ -1433,16 +1361,31 @@ window.SectionRenderer = (function() {
         imgEl.style.position = 'relative';
       }
 
-      // Resolve position data path: e.g. "highlights.efficiency.images.main" → "highlights.efficiency.images.position"
+      // Resolve position data path. Allow per-element override to separate
+      // cover image controls from detail banner controls in card-grid.
       const pathParts = materialPath.split('.');
-      // Replace last segment with "position"
-      const posPath = [...pathParts.slice(0, -1), 'position'].join('.');
+      const derivedPosPath = [...pathParts.slice(0, -1), 'position'].join('.');
+      const customPosPath = (imgEl.getAttribute('data-image-position-path') || '').trim();
+      const posPath = customPosPath || derivedPosPath;
+      const cardGridLegacyPosPath = /^features\.cards\.\d+\.position$/.test(posPath)
+        ? posPath.replace(/\.position$/, '.imagePosition')
+        : null;
+      const cardGridDetailBasePosPath = /^features\.cards\.\d+\.detailImagePosition$/.test(posPath)
+        ? posPath.replace(/\.detailImagePosition$/, '.position')
+        : null;
+      const cardGridDetailLegacyPosPath = cardGridDetailBasePosPath
+        ? cardGridDetailBasePosPath.replace(/\.position$/, '.imagePosition')
+        : null;
       const effectivePosPath = resolveImagePositionPath(posPath, imgEl);
 
       // Get current values from material
       const mat = material;
       const posData = getNestedValue(mat, `${pageKey}.${effectivePosPath}`)
         || getNestedValue(mat, `${pageKey}.${posPath}`)
+        || (cardGridDetailBasePosPath ? getNestedValue(mat, `${pageKey}.${cardGridDetailBasePosPath}`) : null)
+        || (cardGridDetailLegacyPosPath ? getNestedValue(mat, `${pageKey}.${cardGridDetailLegacyPosPath}`) : null)
+        || (cardGridLegacyPosPath ? getNestedValue(mat, `${pageKey}.${cardGridLegacyPosPath}`) : null)
+        || (cardGridLegacyPosPath ? getNestedValue(mat, cardGridLegacyPosPath) : null)
         || {};
       const currentX = posData.x ?? 50;
       const currentY = posData.y ?? 50;
@@ -1497,6 +1440,14 @@ window.SectionRenderer = (function() {
       });
 
       imgEl.appendChild(controls);
+
+      // Apply saved position values to the element on init so that
+      // persisted zoom/pan is visible immediately after page load.
+      if (currentX !== 50 || currentY !== 50 || currentScale !== 100) {
+        applyImagePosition(imgEl, 'x', currentX);
+        applyImagePosition(imgEl, 'y', currentY);
+        applyImagePosition(imgEl, 'scale', currentScale);
+      }
     });
   }
 
@@ -1551,8 +1502,15 @@ window.SectionRenderer = (function() {
     const effectivePosPath = resolveImagePositionPath(posPath, imgEl);
     const fullPath = `${pageKey}.${effectivePosPath}`;
     const fallbackPath = `${pageKey}.${posPath}`;
+    const cardGridLegacyPath = /^features\.cards\.\d+\.position$/.test(posPath)
+      ? `${pageKey}.${posPath.replace(/\.position$/, '.imagePosition')}`
+      : null;
     const posObj = getNestedValue(material, fullPath) || getNestedValue(material, fallbackPath) || {};
     setNestedValue(material, fullPath, { ...posObj, [prop]: value });
+    if (cardGridLegacyPath) {
+      const legacyObj = getNestedValue(material, cardGridLegacyPath) || {};
+      setNestedValue(material, cardGridLegacyPath, { ...legacyObj, [prop]: value });
+    }
     if (window.ModeManager) {
       window.ModeManager.updateMaterialInMemory(material);
     }
@@ -1568,10 +1526,17 @@ window.SectionRenderer = (function() {
     const effectivePosPath = resolveImagePositionPath(posPath, imgEl);
     const fullPath = `${pageKey}.${effectivePosPath}`;
     const fallbackPath = `${pageKey}.${posPath}`;
+    const cardGridLegacyPath = /^features\.cards\.\d+\.position$/.test(posPath)
+      ? `${pageKey}.${posPath.replace(/\.position$/, '.imagePosition')}`
+      : null;
     let posObj = getNestedValue(material, fullPath) || getNestedValue(material, fallbackPath) || {};
 
     // Ensure position object exists in material
     setNestedValue(material, fullPath, { ...posObj, [prop]: value });
+    if (cardGridLegacyPath) {
+      const legacyObj = getNestedValue(material, cardGridLegacyPath) || {};
+      setNestedValue(material, cardGridLegacyPath, { ...legacyObj, [prop]: value });
+    }
 
     if (window.ModeManager) {
       window.ModeManager.updateMaterialInMemory(material);
@@ -1579,6 +1544,10 @@ window.SectionRenderer = (function() {
       const state = window.ModeManager.getState();
       if (state.dataMode === 'online') {
         window.ModeManager.patchMaterial(fullPath, { ...posObj, [prop]: value });
+        if (cardGridLegacyPath) {
+          const legacyObj = getNestedValue(material, cardGridLegacyPath) || {};
+          window.ModeManager.patchMaterial(cardGridLegacyPath, legacyObj);
+        }
       }
     }
   }

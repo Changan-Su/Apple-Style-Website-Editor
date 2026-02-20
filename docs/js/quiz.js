@@ -1,6 +1,6 @@
 /**
- * Quiz Engine - Handles quiz rendering, interaction, and scoring
- * Supports: Multiple Choice, True/False, Fill-in-blank, Short Answer
+ * Quiz Engine - Apple-style interactive quiz with single-question display
+ * Features: One question at a time, immediate feedback, Next button transition
  */
 
 window.QuizEngine = (function() {
@@ -8,15 +8,11 @@ window.QuizEngine = (function() {
 
   const quizzes = new Map();
 
-  function initAll() {
-    const containers = document.querySelectorAll('[data-quiz-id]');
-    containers.forEach(container => {
-      const quizId = container.getAttribute('data-quiz-id');
-      init(quizId, container);
-    });
+  function isEditMode() {
+    return document.body.classList.contains('edit-mode');
   }
 
-  function init(quizId, container) {
+  function init(quizId) {
     const material = window.SectionRenderer ? window.SectionRenderer.getMaterial() : null;
     if (!material) {
       console.warn('Material not available for quiz');
@@ -29,267 +25,403 @@ window.QuizEngine = (function() {
       return;
     }
 
+    const section = document.querySelector(`[data-quiz-id="${quizId}"]`);
+    if (!section) return;
+
     const quiz = {
       id: quizId,
       data: quizData,
-      container,
+      section,
+      currentQuestionIndex: 0,
       answers: {},
-      submitted: false
+      correctCount: 0
     };
 
     quizzes.set(quizId, quiz);
-    render(quiz);
-  }
-
-  function render(quiz) {
-    const { data, container } = quiz;
-    const { questions } = data;
-
-    let html = '<div class="quiz-questions flex flex-col gap-8">';
-
-    questions.forEach((q, i) => {
-      html += renderQuestion(q, i, quiz);
-    });
-
-    html += `
-      </div>
-      <div class="mt-12 flex items-center justify-between">
-        <button class="quiz-submit px-8 py-4 rounded-full bg-accent-blue text-white font-medium hover:bg-blue-600 transition-colors" onclick="QuizEngine.submit('${quiz.id}')">
-          Submit Answers
-        </button>
-        <div class="quiz-score hidden">
-          <span class="text-2xl font-semibold text-white"></span>
-        </div>
-      </div>
-    `;
-
-    container.innerHTML = html;
-  }
-
-  function renderQuestion(question, index, quiz) {
-    const qNum = index + 1;
+    attachEventListeners(quiz);
+    showQuestion(quiz, 0);
     
-    switch (question.type) {
-      case 'mc':
-        return renderMultipleChoice(question, qNum, quiz.id);
-      case 'tf':
-        return renderTrueFalse(question, qNum, quiz.id);
-      case 'fill':
-        return renderFillInBlank(question, qNum, quiz.id);
-      case 'short':
-        return renderShortAnswer(question, qNum, quiz.id);
-      default:
-        return '';
-    }
-  }
-
-  function renderMultipleChoice(q, qNum, quizId) {
-    const options = q.options || [];
-    
-    const optionsHtml = options.map((opt, i) => `
-      <label class="flex items-center gap-3 p-4 rounded-lg bg-surface-darker border border-white/10 cursor-pointer hover:border-accent-cyan/50 transition-colors quiz-option">
-        <input type="radio" name="q${qNum}" value="${i}" class="w-5 h-5 accent-accent-cyan" onchange="QuizEngine.recordAnswer('${quizId}', ${qNum - 1}, ${i})">
-        <span class="text-white">${opt}</span>
-      </label>
-    `).join('');
-
-    return `
-      <div class="quiz-question" data-question="${qNum - 1}">
-        <h3 class="text-2xl font-semibold text-white mb-4">${qNum}. ${q.question}</h3>
-        <div class="flex flex-col gap-3">
-          ${optionsHtml}
-        </div>
-        <div class="quiz-feedback hidden mt-4 p-4 rounded-lg"></div>
-      </div>
-    `;
-  }
-
-  function renderTrueFalse(q, qNum, quizId) {
-    return `
-      <div class="quiz-question" data-question="${qNum - 1}">
-        <h3 class="text-2xl font-semibold text-white mb-4">${qNum}. ${q.question}</h3>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-3 p-4 rounded-lg bg-surface-darker border border-white/10 cursor-pointer hover:border-accent-cyan/50 transition-colors flex-1 quiz-option">
-            <input type="radio" name="q${qNum}" value="true" class="w-5 h-5 accent-accent-cyan" onchange="QuizEngine.recordAnswer('${quizId}', ${qNum - 1}, true)">
-            <span class="text-white">True</span>
-          </label>
-          <label class="flex items-center gap-3 p-4 rounded-lg bg-surface-darker border border-white/10 cursor-pointer hover:border-accent-cyan/50 transition-colors flex-1 quiz-option">
-            <input type="radio" name="q${qNum}" value="false" class="w-5 h-5 accent-accent-cyan" onchange="QuizEngine.recordAnswer('${quizId}', ${qNum - 1}, false)">
-            <span class="text-white">False</span>
-          </label>
-        </div>
-        <div class="quiz-feedback hidden mt-4 p-4 rounded-lg"></div>
-      </div>
-    `;
-  }
-
-  function renderFillInBlank(q, qNum, quizId) {
-    return `
-      <div class="quiz-question" data-question="${qNum - 1}">
-        <h3 class="text-2xl font-semibold text-white mb-4">${qNum}. ${q.question}</h3>
-        <input 
-          type="text" 
-          class="w-full p-4 rounded-lg bg-surface-darker border border-white/10 text-white placeholder-white/40 focus:border-accent-cyan/50 outline-none transition-colors"
-          placeholder="Your answer"
-          onchange="QuizEngine.recordAnswer('${quizId}', ${qNum - 1}, this.value)"
-        >
-        <div class="quiz-feedback hidden mt-4 p-4 rounded-lg"></div>
-      </div>
-    `;
-  }
-
-  function renderShortAnswer(q, qNum, quizId) {
-    return `
-      <div class="quiz-question" data-question="${qNum - 1}">
-        <h3 class="text-2xl font-semibold text-white mb-4">${qNum}. ${q.question}</h3>
-        <textarea 
-          class="w-full p-4 rounded-lg bg-surface-darker border border-white/10 text-white placeholder-white/40 focus:border-accent-cyan/50 outline-none transition-colors resize-none"
-          rows="4"
-          placeholder="Your answer"
-          onchange="QuizEngine.recordAnswer('${quizId}', ${qNum - 1}, this.value)"
-        ></textarea>
-        <div class="quiz-feedback hidden mt-4 p-4 rounded-lg"></div>
-      </div>
-    `;
-  }
-
-  function recordAnswer(quizId, questionIndex, answer) {
-    const quiz = quizzes.get(quizId);
-    if (quiz) {
-      quiz.answers[questionIndex] = answer;
-    }
-  }
-
-  function submit(quizId) {
-    const quiz = quizzes.get(quizId);
-    if (!quiz || quiz.submitted) return;
-
-    quiz.submitted = true;
-    
-    const { data, answers, container } = quiz;
-    const { questions } = data;
-    
-    let correct = 0;
-    let total = questions.length;
-
-    questions.forEach((q, i) => {
-      const userAnswer = answers[i];
-      const isCorrect = checkAnswer(q, userAnswer);
-      
-      if (isCorrect) correct++;
-      
-      // Show feedback
-      showFeedback(container, i, isCorrect, q);
-    });
-
-    // Show score
-    const scoreEl = container.querySelector('.quiz-score');
-    const submitBtn = container.querySelector('.quiz-submit');
-    
-    if (scoreEl) {
-      scoreEl.classList.remove('hidden');
-      scoreEl.querySelector('span').textContent = `Score: ${correct}/${total}`;
-    }
-    
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    }
-
-    // Disable all inputs
-    container.querySelectorAll('input, textarea').forEach(input => {
-      input.disabled = true;
-    });
-  }
-
-  function checkAnswer(question, userAnswer) {
-    if (userAnswer === undefined || userAnswer === null || userAnswer === '') {
-      return false;
-    }
-
-    switch (question.type) {
-      case 'mc':
-        return userAnswer === question.answer;
-      
-      case 'tf':
-        const userBool = userAnswer === true || userAnswer === 'true';
-        return userBool === question.answer;
-      
-      case 'fill':
-        const correct = question.answer.toLowerCase().trim();
-        const user = String(userAnswer).toLowerCase().trim();
-        return user === correct;
-      
-      case 'short':
-        // Check for keywords
-        if (question.keywords && Array.isArray(question.keywords)) {
-          const userText = String(userAnswer).toLowerCase();
-          const matches = question.keywords.filter(kw => 
-            userText.includes(kw.toLowerCase())
-          );
-          return matches.length >= Math.ceil(question.keywords.length / 2);
-        }
-        return true; // Manual grading needed
-      
-      default:
-        return false;
-    }
-  }
-
-  function showFeedback(container, questionIndex, isCorrect, question) {
-    const questionEl = container.querySelector(`[data-question="${questionIndex}"]`);
-    if (!questionEl) return;
-
-    const feedbackEl = questionEl.querySelector('.quiz-feedback');
-    if (!feedbackEl) return;
-
-    feedbackEl.classList.remove('hidden');
-    
-    if (isCorrect) {
-      feedbackEl.classList.add('bg-green-900/30', 'border', 'border-green-500/50', 'text-green-400');
-      feedbackEl.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5 inline mr-2"></i>Correct!';
+    // Set initial collapsed state
+    if (quizData.collapsed !== false) {
+      section.classList.add('quiz-collapsed');
+      section.classList.remove('quiz-expanded');
     } else {
-      feedbackEl.classList.add('bg-red-900/30', 'border', 'border-red-500/50', 'text-red-400');
-      
-      let correctAnswer = '';
-      if (question.type === 'mc') {
-        correctAnswer = question.options[question.answer];
-      } else if (question.type === 'tf') {
-        correctAnswer = question.answer ? 'True' : 'False';
-      } else if (question.type === 'fill') {
-        correctAnswer = question.answer;
-      }
-      
-      feedbackEl.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5 inline mr-2"></i>Incorrect. ${correctAnswer ? `Correct answer: ${correctAnswer}` : ''}`;
+      section.classList.remove('quiz-collapsed');
+      section.classList.add('quiz-expanded');
     }
-
-    // Highlight the option
-    const options = questionEl.querySelectorAll('.quiz-option');
-    options.forEach(opt => {
-      if (isCorrect) {
-        const input = opt.querySelector('input');
-        if (input && input.checked) {
-          opt.classList.add('border-green-500', 'bg-green-900/20');
-        }
-      } else {
-        const input = opt.querySelector('input');
-        if (input && input.checked) {
-          opt.classList.add('border-red-500', 'bg-red-900/20');
-        }
-      }
-    });
-
-    // Reinitialize icons
+    
+    // Initialize Lucide icons
     if (window.lucide) {
       window.lucide.createIcons();
     }
   }
 
-  // Public API
+  function initAll() {
+    const sections = document.querySelectorAll('.quiz-section[data-quiz-id]');
+    sections.forEach(section => {
+      const quizId = section.getAttribute('data-quiz-id');
+      init(quizId);
+    });
+  }
+
+  function attachEventListeners(quiz) {
+    const { section } = quiz;
+    
+    // Attach click handlers to all option buttons
+    const optionButtons = section.querySelectorAll('.quiz-option-btn');
+    optionButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        handleOptionClick(quiz, this);
+      });
+    });
+    
+    // Attach click handlers to all Next buttons
+    const nextButtons = section.querySelectorAll('.quiz-next-btn');
+    nextButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        handleNextClick(quiz);
+      });
+    });
+  }
+
+  function showQuestion(quiz, questionIndex) {
+    const { section } = quiz;
+    const questionCards = section.querySelectorAll('.quiz-question-card');
+    
+    questionCards.forEach((card, idx) => {
+      if (idx === questionIndex) {
+        // Show current question with fade-in
+        card.classList.add('active');
+        card.style.animation = 'quiz-fade-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+      } else {
+        card.classList.remove('active');
+      }
+    });
+    
+    quiz.currentQuestionIndex = questionIndex;
+  }
+
+  function handleOptionClick(quiz, button) {
+    if (isEditMode()) return;
+
+    const questionIndex = parseInt(button.getAttribute('data-question-index'));
+    const optionIndex = parseInt(button.getAttribute('data-option-index'));
+    
+    // Only handle if this is the current question
+    if (questionIndex !== quiz.currentQuestionIndex) {
+      return;
+    }
+    
+    // Check if this question was already answered
+    if (quiz.answers[questionIndex] !== undefined) {
+      return;
+    }
+    
+    // Record the answer
+    quiz.answers[questionIndex] = optionIndex;
+    
+    const question = quiz.data.questions[questionIndex];
+    const isCorrect = optionIndex === question.answer;
+    
+    if (isCorrect) {
+      quiz.correctCount++;
+      showCorrectFeedback(quiz, questionIndex, button);
+    } else {
+      showWrongFeedback(quiz, questionIndex, button);
+    }
+    
+    // Show explanation
+    showExplanation(quiz, questionIndex);
+    
+    // Disable all options for this question
+    disableQuestionOptions(quiz, questionIndex);
+    
+    // Show Next button
+    showNextButton(quiz, questionIndex);
+  }
+
+  function handleNextClick(quiz) {
+    if (isEditMode()) return;
+
+    const { currentQuestionIndex, data } = quiz;
+    const nextIndex = currentQuestionIndex + 1;
+    
+    // Hide current question with fade-out
+    const currentCard = quiz.section.querySelector(`[data-question-index="${currentQuestionIndex}"]`);
+    if (currentCard) {
+      currentCard.style.animation = 'quiz-fade-slide-out 0.4s cubic-bezier(0.4, 0.0, 1, 1)';
+      
+      setTimeout(() => {
+        currentCard.classList.remove('active');
+        
+        // Show next question or results
+        if (nextIndex < data.questions.length) {
+          showQuestion(quiz, nextIndex);
+        } else {
+          showScoreSummary(quiz);
+        }
+      }, 400);
+    }
+  }
+
+  function showCorrectFeedback(quiz, questionIndex, button) {
+    button.classList.add('quiz-option-correct');
+    button.classList.remove('border-white/10');
+    button.classList.add('border-green-500', 'bg-green-900/20');
+    
+    const checkmark = button.querySelector('.quiz-option-checkmark');
+    if (checkmark) {
+      checkmark.classList.remove('opacity-0');
+      checkmark.classList.add('opacity-100', 'text-green-500');
+      
+      const svg = checkmark.querySelector('svg polyline');
+      if (svg) {
+        svg.style.strokeDasharray = '100';
+        svg.style.strokeDashoffset = '100';
+        svg.style.animation = 'checkmark-draw 0.6s ease-out forwards';
+      }
+    }
+    
+    celebrateCorrectAnswer(button);
+    button.style.animation = 'quiz-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+  }
+
+  function showWrongFeedback(quiz, questionIndex, button) {
+    button.classList.add('quiz-option-wrong');
+    button.classList.remove('border-white/10');
+    button.classList.add('border-red-500', 'bg-red-900/20');
+    button.style.animation = 'quiz-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97)';
+    
+    const question = quiz.data.questions[questionIndex];
+    const questionCard = quiz.section.querySelector(`[data-question-index="${questionIndex}"]`);
+    const correctButton = questionCard.querySelector(`[data-option-index="${question.answer}"]`);
+    
+    if (correctButton) {
+      setTimeout(() => {
+        correctButton.classList.add('quiz-option-correct-reveal');
+        correctButton.classList.remove('border-white/10');
+        correctButton.classList.add('border-green-500', 'bg-green-900/20');
+        
+        const checkmark = correctButton.querySelector('.quiz-option-checkmark');
+        if (checkmark) {
+          checkmark.classList.remove('opacity-0');
+          checkmark.classList.add('opacity-100', 'text-green-500');
+        }
+      }, 300);
+    }
+  }
+
+  function celebrateCorrectAnswer(button) {
+    const particles = button.querySelector('.quiz-option-particles');
+    if (!particles) return;
+    
+    particles.innerHTML = '';
+    
+    for (let i = 0; i < 12; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'quiz-particle';
+      
+      const angle = (i / 12) * Math.PI * 2;
+      const distance = 60 + Math.random() * 20;
+      const tx = Math.cos(angle) * distance;
+      const ty = Math.sin(angle) * distance;
+      
+      particle.style.cssText = `
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: linear-gradient(135deg, #22d3ee, #06b6d4);
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: particle-burst 1s ease-out forwards;
+        --tx: ${tx}px;
+        --ty: ${ty}px;
+        opacity: 0;
+      `;
+      
+      particles.appendChild(particle);
+    }
+    
+    setTimeout(() => {
+      particles.innerHTML = '';
+    }, 1000);
+  }
+
+  function showExplanation(quiz, questionIndex) {
+    const questionCard = quiz.section.querySelector(`[data-question-index="${questionIndex}"]`);
+    const explanationPanel = questionCard.querySelector('.quiz-explanation-panel');
+    
+    if (explanationPanel) {
+      setTimeout(() => {
+        explanationPanel.classList.remove('hidden');
+        explanationPanel.style.animation = 'quiz-slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+        
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }, 400);
+    }
+  }
+
+  function showNextButton(quiz, questionIndex) {
+    const questionCard = quiz.section.querySelector(`[data-question-index="${questionIndex}"]`);
+    const nextBtnContainer = questionCard.querySelector('.quiz-next-btn-container');
+    
+    if (nextBtnContainer) {
+      setTimeout(() => {
+        nextBtnContainer.classList.remove('hidden');
+        nextBtnContainer.style.animation = 'quiz-fade-in 0.4s ease-out';
+        
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }, 600);
+    }
+  }
+
+  function disableQuestionOptions(quiz, questionIndex) {
+    const questionCard = quiz.section.querySelector(`[data-question-index="${questionIndex}"]`);
+    const optionButtons = questionCard.querySelectorAll('.quiz-option-btn');
+    
+    optionButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.classList.add('cursor-not-allowed');
+      btn.style.pointerEvents = 'none';
+    });
+  }
+
+  function showScoreSummary(quiz) {
+    const { section, correctCount, data } = quiz;
+    const total = data.questions.length;
+    
+    // Hide all question cards
+    const questionCards = section.querySelectorAll('.quiz-question-card');
+    questionCards.forEach(card => card.classList.remove('active'));
+
+    // Collapse the questions container so it takes no space
+    const questionsContainer = section.querySelector('.quiz-questions-container');
+    if (questionsContainer) {
+      questionsContainer.style.minHeight = '0';
+      questionsContainer.style.height = '0';
+      questionsContainer.style.overflow = 'hidden';
+    }
+    
+    const scoreSummary = section.querySelector('.quiz-score-summary');
+    const finalScore = section.querySelector('.quiz-final-score');
+    
+    if (scoreSummary && finalScore) {
+      finalScore.textContent = correctCount;
+      scoreSummary.classList.remove('hidden');
+      scoreSummary.style.animation = 'quiz-slide-down 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+      
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+  }
+
+  function toggleCollapse(quizId) {
+    const quiz = quizzes.get(quizId);
+    if (!quiz) return;
+    
+    const { section } = quiz;
+    const isCollapsed = section.classList.contains('quiz-collapsed');
+    
+    if (isCollapsed) {
+      section.classList.remove('quiz-collapsed');
+      section.classList.add('quiz-expanded');
+      
+      const chevron = section.querySelector('.quiz-chevron');
+      if (chevron) {
+        chevron.style.transform = 'rotate(180deg)';
+      }
+    } else {
+      section.classList.add('quiz-collapsed');
+      section.classList.remove('quiz-expanded');
+      
+      const chevron = section.querySelector('.quiz-chevron');
+      if (chevron) {
+        chevron.style.transform = 'rotate(0deg)';
+      }
+      
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function reset(quizId) {
+    const quiz = quizzes.get(quizId);
+    if (!quiz) return;
+    
+    quiz.answers = {};
+    quiz.currentQuestionIndex = 0;
+    quiz.correctCount = 0;
+    
+    const { section } = quiz;
+    
+    const scoreSummary = section.querySelector('.quiz-score-summary');
+    if (scoreSummary) {
+      scoreSummary.classList.add('hidden');
+    }
+
+    // Restore the questions container height
+    const questionsContainer = section.querySelector('.quiz-questions-container');
+    if (questionsContainer) {
+      questionsContainer.style.minHeight = '';
+      questionsContainer.style.height = '';
+      questionsContainer.style.overflow = '';
+    }
+    
+    const questionCards = section.querySelectorAll('.quiz-question-card');
+    questionCards.forEach(card => {
+      const explanation = card.querySelector('.quiz-explanation-panel');
+      if (explanation) {
+        explanation.classList.add('hidden');
+      }
+      
+      const nextBtnContainer = card.querySelector('.quiz-next-btn-container');
+      if (nextBtnContainer) {
+        nextBtnContainer.classList.add('hidden');
+      }
+      
+      const optionButtons = card.querySelectorAll('.quiz-option-btn');
+      optionButtons.forEach(btn => {
+        btn.disabled = false;
+        btn.style.pointerEvents = 'auto';
+        btn.classList.remove(
+          'cursor-not-allowed',
+          'quiz-option-correct',
+          'quiz-option-wrong',
+          'quiz-option-correct-reveal',
+          'border-green-500',
+          'bg-green-900/20',
+          'border-red-500',
+          'bg-red-900/20'
+        );
+        btn.classList.add('border-white/10');
+        btn.style.animation = '';
+        
+        const checkmark = btn.querySelector('.quiz-option-checkmark');
+        if (checkmark) {
+          checkmark.classList.remove('opacity-100', 'text-green-500');
+          checkmark.classList.add('opacity-0');
+        }
+        
+        const particles = btn.querySelector('.quiz-option-particles');
+        if (particles) {
+          particles.innerHTML = '';
+        }
+      });
+    });
+    
+    showQuestion(quiz, 0);
+  }
+
   return {
-    initAll,
     init,
-    recordAnswer,
-    submit
+    initAll,
+    toggleCollapse,
+    reset
   };
 })();

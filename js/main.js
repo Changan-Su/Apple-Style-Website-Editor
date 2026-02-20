@@ -19,37 +19,89 @@ window.MainInteractions = (function() {
     }
   }
 
+  function formatTime(seconds) {
+    if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
   function initHeroCinemaMode() {
-    const heroSection = document.querySelector('section#overview');
-    const watchButton = document.querySelector('.hero-cinema-secondary');
-    const exitButton = document.querySelector('.hero-exit-cinema');
-    const video = document.querySelector('section#overview video[data-material-video]');
-    
+    const heroSection   = document.querySelector('section#overview');
+    const watchButton   = document.querySelector('.hero-cinema-secondary');
+    const exitButton    = document.querySelector('.hero-exit-cinema');
+    const controls      = document.querySelector('.hero-video-controls');
+    const playPauseBtn  = document.querySelector('.hero-video-playpause');
+    const progressTrack = document.querySelector('.hero-video-progress-track');
+    const progressFill  = document.querySelector('.hero-video-progress-fill');
+    const timeLabel     = document.querySelector('.hero-video-time');
+    const video         = document.querySelector('section#overview video[data-material-video]');
+
     if (!heroSection || !watchButton || !exitButton) return;
-    
-    // Enter cinema mode
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function updatePlayPauseIcon(paused) {
+      if (!playPauseBtn) return;
+      playPauseBtn.innerHTML = paused
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+      playPauseBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+    }
+
+    function updateProgress() {
+      if (!video || !video.duration) return;
+      const pct = (video.currentTime / video.duration) * 100;
+      if (progressFill) progressFill.style.width = pct + '%';
+      if (timeLabel) timeLabel.textContent = formatTime(video.currentTime);
+    }
+
+    // ── Video event listeners ─────────────────────────────────────────────
+    if (video) {
+      video.addEventListener('timeupdate', updateProgress);
+      video.addEventListener('play',  () => updatePlayPauseIcon(false));
+      video.addEventListener('pause', () => updatePlayPauseIcon(true));
+    }
+
+    // ── Play / Pause toggle ───────────────────────────────────────────────
+    if (playPauseBtn && video) {
+      playPauseBtn.addEventListener('click', () => {
+        if (video.paused) {
+          video.play().catch(err => console.warn('Play failed:', err));
+        } else {
+          video.pause();
+        }
+      });
+    }
+
+    // ── Progress seek ─────────────────────────────────────────────────────
+    if (progressTrack && video) {
+      progressTrack.addEventListener('click', (e) => {
+        if (!video.duration) return;
+        const rect = progressTrack.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        video.currentTime = ratio * video.duration;
+      });
+    }
+
+    // ── Enter cinema mode ─────────────────────────────────────────────────
     watchButton.addEventListener('click', () => {
       heroSection.classList.add('cinema-mode');
-      exitButton.classList.remove('hidden');
-      
+      // CSS drives visibility of exitButton and controls via .cinema-mode selector
+
       if (video) {
         video.muted = false;
         video.play().catch(err => console.warn('Video play failed:', err));
       }
-      
-      // Re-initialize Lucide icons for the exit button
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
     });
-    
-    // Exit cinema mode
+
+    // ── Exit cinema mode ──────────────────────────────────────────────────
     exitButton.addEventListener('click', () => {
       heroSection.classList.remove('cinema-mode');
-      exitButton.classList.add('hidden');
-      
+      // CSS hides exitButton and controls when .cinema-mode is removed
+
       if (video) {
         video.muted = true;
+        video.play().catch(() => {});
       }
     });
   }
