@@ -865,7 +865,7 @@
           "coverImage": "",
           "description": "Open an interactive visualization of fusion process and confinement behavior.",
           "detail": "Click Learn More to open the standalone fusion visualization page in a new tab.",
-          "learnMoreUrl": "../dylan.html"
+          "learnMoreUrl": "dylan.html"
         }
       ]
     },
