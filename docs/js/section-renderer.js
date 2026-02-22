@@ -59,7 +59,7 @@ window.SectionRenderer = (function() {
     const data = material[pageKey]?.[id] || {};
 
     // Get template and render
-    const html = window.TemplateRegistry.render(template, id, data, material);
+    const html = window.TemplateRegistry.render(template, id, data, material, section);
     
     if (html) {
       // Create wrapper div
@@ -383,6 +383,11 @@ window.SectionRenderer = (function() {
         // Learn More → flip to back (text) face
         const learnBtn = e.target.closest('.id-panel-learn-more');
         if (learnBtn) {
+          const learnMoreUrl = learnBtn.getAttribute('data-learn-more-url');
+          if (learnMoreUrl) {
+            window.open(learnMoreUrl, '_blank', 'noopener,noreferrer');
+            return;
+          }
           const inner = learnBtn.closest('.id-panel-inner');
           if (inner) inner.classList.add('id-panel-flipped');
           if (window.lucide) window.lucide.createIcons();

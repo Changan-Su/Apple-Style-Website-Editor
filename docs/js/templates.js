@@ -1,6 +1,6 @@
 /**
  * Template Registry - Defines all section template render functions
- * Each template is a function that takes (sectionId, data, material) and returns HTML string
+ * Each template is a function that takes (sectionId, data, material, sectionConfig) and returns HTML string
  */
 
 window.TemplateRegistry = (function() {
@@ -1304,8 +1304,14 @@ window.TemplateRegistry = (function() {
   }
 
   // Interactive Details Template (Dark)
-  function interactiveDetailsTemplate(sectionId, data, material) {
+  function interactiveDetailsTemplate(sectionId, data, material, sectionConfig = {}) {
     const items = data.items || [];
+    const requestedDefaultFace = (
+      sectionConfig.interactiveDetailsDefaultFace ??
+      data.interactiveDetailsDefaultFace ??
+      'cover'
+    );
+    const defaultFace = String(requestedDefaultFace).toLowerCase() === 'detail' ? 'detail' : 'cover';
 
     const itemsHtml = items.map((item, i) => {
       const isFirst = i === 0;
@@ -1347,14 +1353,19 @@ window.TemplateRegistry = (function() {
       const coverBgStyle = coverImgUrl
         ? `background-image: url('${coverImgUrl}'); background-size: cover; background-position: center;`
         : '';
+      const learnMoreUrlAttr = item.learnMoreUrl
+        ? ` data-learn-more-url="${item.learnMoreUrl}"`
+        : '';
       
+      const initialPanelStateClass = defaultFace === 'detail' ? ' id-panel-flipped' : '';
+
       return `
         <div class="id-detail-panel ${isFirst ? 'id-detail-panel--active' : ''} rounded-[32px]"
              data-id-detail="${i}"
              data-panel-index="${i}">
           <!-- Flip card wrapper -->
           <div class="id-panel-flipper">
-            <div class="id-panel-inner">
+            <div class="id-panel-inner${initialPanelStateClass}">
 
               <!-- FRONT: Cover face -->
               <div class="id-panel-face id-panel-front bg-surface-dark">
@@ -1364,7 +1375,7 @@ window.TemplateRegistry = (function() {
                   <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
                   <!-- Learn More button -->
                   <div class="absolute bottom-0 left-0 right-0 p-[52px]">
-                    <button class="id-panel-learn-more px-7 py-3.5 rounded-full bg-white text-black text-[17px] font-medium hover:bg-gray-100 transition-colors flex items-center gap-2">
+                    <button class="id-panel-learn-more px-7 py-3.5 rounded-full bg-white text-black text-[17px] font-medium hover:bg-gray-100 transition-colors flex items-center gap-2"${learnMoreUrlAttr}>
                       Learn More
                       <i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </button>
@@ -1633,7 +1644,7 @@ window.TemplateRegistry = (function() {
       const itemId = Number(item?.id) || (index + 1);
       const itemText = typeof item?.text === 'string' ? item.text : String(item?.text || '');
       return `
-        <div id="ref-${itemId}" class="ref-item flex gap-3 items-start group" data-ref-id="${itemId}">
+        <div id="ref-${itemId}" class="ref-item flex gap-2 items-start group" data-ref-id="${itemId}">
           <span class="text-sm text-text-muted flex-shrink-0">[${itemId}]</span>
           <p class="text-sm text-text-muted leading-relaxed flex-1" 
              data-material="footer.reference.items.${index}.text"
@@ -1659,12 +1670,12 @@ window.TemplateRegistry = (function() {
             </div>
 
             <div class="flex-1 flex justify-center min-w-0">
-              <div class="flex flex-col gap-4 max-w-[560px] w-full">
+              <div class="flex flex-col gap-4 max-w-[920px] w-full">
                 <h4 class="text-sm font-semibold text-white" data-material="footer.reference.title">${data.reference?.title || 'Reference'}</h4>
-                <div class="flex flex-col gap-3" id="reference-list">
+                <div class="grid gap-2" id="reference-list" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
                   ${referenceItemsHtml}
                   <button id="add-reference-btn" 
-                          class="edit-mode-only flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-white/20 text-text-muted hover:text-white hover:border-white/40 transition-colors text-sm">
+                          class="edit-mode-only col-span-full justify-self-start flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-white/20 text-text-muted hover:text-white hover:border-white/40 transition-colors text-sm">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Add Reference
                   </button>
@@ -1705,13 +1716,13 @@ window.TemplateRegistry = (function() {
       return Object.keys(templates);
     },
     buildTextImageLeftItemsCompat: buildTextImageLeftItemsCompat,
-    render: function(templateName, sectionId, data, material) {
+    render: function(templateName, sectionId, data, material, sectionConfig) {
       const template = templates[templateName];
       if (!template) {
         console.warn(`Template '${templateName}' not found`);
         return `<div class="error">Template '${templateName}' not found</div>`;
       }
-      return template(sectionId, data, material);
+      return template(sectionId, data, material, sectionConfig);
     }
   };
 })();

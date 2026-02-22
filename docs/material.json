@@ -26,6 +26,7 @@
       {
         "id": "Fusion2",
         "template": "interactive-details",
+        "interactiveDetailsDefaultFace": "cover",
         "enabled": true,
         "showInNav": true,
         "order": 3,
@@ -599,8 +600,8 @@
       }
     },
     "footer": {
-      "brandName": "Digital Project of Physics in Society",
-      "brandTagline": "I don't know what I can fill here...",
+      "brandName": "",
+      "brandTagline": "",
       "reference": {
         "title": "Reference",
         "items": [
@@ -858,6 +859,13 @@
           "coverImage": "",
           "description": "Nuclear fusion has many advantages over fission, such as increased energy density, and additional safety considerations.",
           "detail": "As many people are aware, the famous Chernobyl and Fukushima nuclear disasters, combined with the notoriety of the Manhattan project means that many people are afraid of nuclear energy. Nuclear fusion has many advantages to fission.<sup class=\"ref-cite\" data-ref-id=\"38\">[38]</sup> Fission involved moderating and controlling a violent chain reaction. However, if at any point confinement fails in magnetic fusion, the plasma cools and the reaction stops. Also, fusion facilities are operated remotely to reduce radiation exposure risk.<sup class=\"ref-cite\" data-ref-id=\"39\">[39]</sup> While the reactant, tritium, is radioactive (half life 12.3 years), the amount used in a fusion reactor is minuscule, and the product is helium, which is not radioactive. Neutron radiation would be harmful to human life, but while fusion reactors are active, they are operated and maintained remotely.\n\nThe binding-energy-per-nucleon graph shows the energy changes during fission and fusion. The difference in binding energy between the reactants and products is the energy released during a nuclear reaction. As you can see, the difference between a U235 fission and DT fusion is immense; the deuterium from one glass of seawater releases energy comparable to burning a barrel of oil.<sup class=\"ref-cite\" data-ref-id=\"40\">[40]</sup>"
+        },
+        {
+          "title": "Fusion Visualization",
+          "coverImage": "",
+          "description": "Open an interactive visualization of fusion process and confinement behavior.",
+          "detail": "Click Learn More to open the standalone fusion visualization page in a new tab.",
+          "learnMoreUrl": "../dylan.html"
         }
       ]
     },
